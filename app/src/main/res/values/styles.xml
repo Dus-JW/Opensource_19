@@ -1,0 +1,10 @@
+<resources>
+<style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <item name="colorPrimary">@color/white</item>
+    <item name="colorPrimaryDark">@color/black</item>
+</style>
+<style name="SplashTheme" parent="@android:style/Theme.Light.NoTitleBar">
+<item name="android:windowBackground">@drawable/white</item>
+</style>
+
+    </resources>
