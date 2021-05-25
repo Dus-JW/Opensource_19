@@ -27,7 +27,6 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.example.myapplication.databinding.ActivityMainBinding;
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -53,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //getHashKey();
+        getHashKey();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -62,11 +61,13 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         } else {
             showDialogForLocationServiceSetting();
         }
-        
+
+        /***************************************************/
+        //AVD에서 돌릴땐 여기서 부터
         gpsTracker = new GpsTracker(MainActivity.this);
         double lati = gpsTracker.getLatitude();
         double longi = gpsTracker.getLongitude();
-        
+
         MapView mapView = new MapView(this);
 
         ViewGroup mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
@@ -83,7 +84,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         marker.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
 
         mapView.addPOIItem(marker);
-        
+        //여기까지 주석
+
     }
 
     private void getHashKey(){
