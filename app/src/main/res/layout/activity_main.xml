@@ -49,6 +49,7 @@
             android:layout_marginRight="75px"
             android:background="#00ffffff"
             android:tint="#BF1D1D"
+            android:onClick="clickBtn"
             app:srcCompat="@android:drawable/ic_dialog_alert" />
 
     </LinearLayout>

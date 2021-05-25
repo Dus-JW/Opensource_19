@@ -16,15 +16,6 @@
         android:theme="@style/Theme.MyApplication"
         android:usesCleartextTraffic="true">
 
-        <!-- 긴급 액티비티-->
-        <activity android:name=".Emergency">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
         <!-- 스플래시 액티비티 -->
         <activity
             android:name=".SplashActivity"
@@ -40,6 +31,15 @@
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.MyApplication.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 긴급 액티비티-->
+        <activity android:name=".Emergency">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

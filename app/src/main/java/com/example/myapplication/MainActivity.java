@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private static final int PERMISSIONS_REQUEST_CODE = 100;
     String[] REQUIRED_PERMISSIONS  = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getHashKey();
@@ -225,6 +226,11 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+    }
+
+    public void clickBtn(View view){
+        Intent intent = new Intent(this, Emergency.class);
+        startActivity(intent);
     }
 
     @Override
