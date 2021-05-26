@@ -18,8 +18,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Base64;
 import android.util.Log;
+import android.view.MenuInflater;
 import android.view.View;
 
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
@@ -49,13 +51,18 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
     private static final int PERMISSIONS_REQUEST_CODE = 100;
     String[] REQUIRED_PERMISSIONS  = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
-
+    Toolbar main_toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getHashKey();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        main_toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(main_toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_launcher_foreground);
+        getSupportActionBar().setTitle("");
 
         if (checkLocationServicesStatus()) {
             checkRunTimePermission();
@@ -228,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
-    public void clickBtn(View view){
+    public void clickBtn(View view){    //긴급상황 액티비티로 전환
         Intent intent = new Intent(this, Emergency.class);
         startActivity(intent);
     }
@@ -319,5 +326,32 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     public void onMapViewMoveFinished(MapView mapView, MapPoint mapPoint) {
 
     }
+
+    @Override   //툴바에 메뉴xml 연결
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //return super.onCreateOptionsMenu(menu);
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override   //툴바 클릭용 https://www.hanumoka.net/2017/10/28/android-20171028-android-toolbar/ 참고 공사중
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //return super.onOptionsItemSelected(item);
+        switch (item.getItemId()) {
+            case R.id.menu_search:
+                // User chose the "Settings" item, show the app settings UI...
+                Toast.makeText(getApplicationContext(), "환경설정 버튼 클릭됨", Toast.LENGTH_LONG).show();
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                Toast.makeText(getApplicationContext(), "나머지 버튼 클릭됨", Toast.LENGTH_LONG).show();
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
+
 }
 
