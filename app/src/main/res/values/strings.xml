@@ -9,4 +9,10 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="Find_mapping">길찾기 (지도)</string>
+    <string name="Arrange_Info">주변 정보</string>
+    <string name="My_Car_Info">내차 정보</string>
+    <string name="Emergency">비상 상황</string>
+    <string name="Brand">Electric.</string>
+
 </resources>

@@ -33,6 +33,7 @@ import androidx.navigation.ui.NavigationUI;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
 import net.daum.mf.map.api.MapPOIItem;
@@ -55,8 +56,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        getHashKey();
         super.onCreate(savedInstanceState);
+        getHashKey();
         setContentView(R.layout.activity_main);
         main_toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(main_toolbar);
