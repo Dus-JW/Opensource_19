@@ -7,6 +7,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -16,6 +17,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
 import android.view.MenuInflater;
@@ -40,9 +43,19 @@ import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapView;
 
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener{
     GpsTracker gpsTracker;
@@ -53,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private static final int PERMISSIONS_REQUEST_CODE = 100;
     String[] REQUIRED_PERMISSIONS  = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
     Toolbar main_toolbar;
+    SearchByAddress search_result;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +111,32 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mapView.addPOIItem(marker);
         //여기까지 주석
 
+
+        try {
+            search("서울특별시 성북구");
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    public class NetworkThread extends AsyncTask{
+
+        @Override
+        protected Object doInBackground(Object[] objects) {
+            return null;
+        }
     }
 
     private void getHashKey(){
@@ -236,10 +278,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
-    public void clickBtn(View view){    //긴급상황 액티비티로 전환
-        Intent intent = new Intent(this, Emergency.class);
-        startActivity(intent);
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -354,5 +392,57 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
     }
 
+    public void clickBtn(View view){    //긴급상황 액티비티로 전환
+        Intent intent = new Intent(this, Emergency.class);
+        startActivity(intent);
+    }
+
+    void search(String input) throws SAXException, ParserConfigurationException, ParseException, IOException, ExecutionException, InterruptedException {
+        search_result = new SearchByAddress();
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        Log.d("api_before", "this-"+input);
+
+        Future<SearchByAddress> future = executor.submit(() -> {
+            SearchByAddress temp = this.search_result;
+            Log.d("api", "this-"+input);
+            try {
+                this.search_result.XmlToStationList(this.search_result.APISearch(input));
+            } catch (ParserConfigurationException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (SAXException e) {
+                e.printStackTrace();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            return temp;
+        });
+        this.search_result = future.get();
+        Log.d("api_after", "this-"+input);
+
+//        executor.execute(new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    SearchByAddress temp = this.search_result;
+//                    temp.XmlToStationList(temp.APISearch(input));
+//                } catch (ParserConfigurationException e) {
+//                    e.printStackTrace();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                } catch (SAXException e) {
+//                    e.printStackTrace();
+//                } catch (ParseException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+        Log.d("api", "lat = " + this.search_result.getStations()[0].getLat());
+        Log.d("api", "longi = " + this.search_result.getStations()[0].getLongi());
+    }
 }
 
