@@ -34,7 +34,7 @@ import javax.xml.transform.Result;
 public class SearchByAddress {
     private StringBuilder xmlString;
     private ChargeStationInfo[] Stations;
-
+    private int Station_size;
 
     public SearchByAddress() {
         this.xmlString = new StringBuilder();
@@ -83,6 +83,7 @@ public class SearchByAddress {
         NodeList item = root.getElementsByTagName("item");
 
         Stations = new ChargeStationInfo[item.getLength()];
+        Station_size = item.getLength();
         for(int i = 0; i < item.getLength(); i++){
             Node node = item.item(i);
             NodeList node_list = node.getChildNodes();
@@ -112,7 +113,9 @@ public class SearchByAddress {
     public ChargeStationInfo[] getStations() {
         return Stations;
     }
-
+    public int getStation_size() {
+        return Station_size;
+    }
 //    @Override
 //    protected void onPreExecute(){
 //

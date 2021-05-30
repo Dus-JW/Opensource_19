@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -49,6 +51,8 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -67,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     String[] REQUIRED_PERMISSIONS  = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
     Toolbar main_toolbar;
     SearchByAddress search_result;
+    String current_address;
 
 
 
@@ -93,28 +98,16 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         double lati = gpsTracker.getLatitude();
         double longi = gpsTracker.getLongitude();
 
-        MapView mapView = new MapView(this);
+        current_address = getCurrentAddress(lati,longi);
+        Toast myToast = Toast.makeText(this.getApplicationContext(),current_address, Toast.LENGTH_SHORT);
+        myToast.show();     //현재 위치를 주소로 변환 앞에 '대한민국 '을 제거하고 사용해야함 뒤에 '동' 단위도 없애야 할듯 범위가 너무 작음
 
-        ViewGroup mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
-        mapViewContainer.addView(mapView);
-        mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(lati, longi), true);
-
-
-        MapPOIItem marker = new MapPOIItem();
-        //MapPoint point = new MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633);
-        marker.setItemName("Default Marker");
-        marker.setTag(0);
-        marker.setMapPoint(MapPoint.mapPointWithGeoCoord(lati, longi));
-        marker.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
-        marker.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
-
-        mapView.addPOIItem(marker);
-        //여기까지 주석
-
+        String[] cut_address = current_address.split(" ");
 
         try {
-            search("서울특별시 성북구");
-        } catch (SAXException e) {
+            search(cut_address[1]);   //현재 위치 기반으로 '시' 단위 까지 지도에 표시하기 구는 너무 작고 시단위로 해도 주변에 충전소가 많지 않다
+            //search(cut_address[1] +" " + cut_address[2]);         //현재 위치 기반으로 '구' 단위 까지 지도에 표시하기
+        } catch (SAXException e) {                                  //'구' 단위여서 구의 경계에 있으면 옆동네의 충전소가 보이지 않는다
             e.printStackTrace();
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
@@ -128,7 +121,31 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             e.printStackTrace();
         }
 
+        MapView mapView = new MapView(this);
 
+        ViewGroup mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
+        mapViewContainer.addView(mapView);
+        mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(lati, longi), true);
+
+        MapPOIItem[] marker = new MapPOIItem[search_result.getStation_size()];
+        for(int i = 0; i <search_result.getStation_size(); i++){
+            marker[i] = new MapPOIItem();
+            marker[i].setItemName("Default Marker" + i);
+            marker[i].setTag(i);
+            Log.d("station get", "" + search_result.getStations()[i].getLat());
+            Log.d("station get", "" + search_result.getStations()[i].getLongi());
+            marker[i].setMapPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[i].getLat(), search_result.getStations()[i].getLongi()));
+            marker[i].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
+            marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+//            mapView.addPOIItem(marker[i]);
+        }
+
+        mapView.addPOIItems(marker);
+
+
+
+
+        //여기까지 주석
     }
 
     public class NetworkThread extends AsyncTask{
@@ -397,9 +414,14 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         startActivity(intent);
     }
 
+    /*
+    * search를 하면 search_result에 값이 갱신됨 (추가 아님!!!)
+    * 그것의 stations 배열의 값을 하나 고르고 거기서 get을 통해 필요한 정보를
+    * 가져오면 됨 ex)  search_result.getStations()[3].getLongi()
+    * 아니면
+    * */
     void search(String input) throws SAXException, ParserConfigurationException, ParseException, IOException, ExecutionException, InterruptedException {
         search_result = new SearchByAddress();
-
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
@@ -443,6 +465,41 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 //        });
         Log.d("api", "lat = " + this.search_result.getStations()[0].getLat());
         Log.d("api", "longi = " + this.search_result.getStations()[0].getLongi());
+    }
+
+    public String getCurrentAddress( double latitude, double longitude) {
+
+        //지오코더... GPS를 주소로 변환
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+
+        List<Address> addresses;
+
+        try {
+            addresses = geocoder.getFromLocation(
+                    latitude,
+                    longitude,
+                    7);
+        } catch (IOException ioException) {
+            //네트워크 문제
+            Toast.makeText(this, "지오코더 서비스 사용불가", Toast.LENGTH_LONG).show();
+            return "지오코더 서비스 사용불가";
+        } catch (IllegalArgumentException illegalArgumentException) {
+            Toast.makeText(this, "잘못된 GPS 좌표", Toast.LENGTH_LONG).show();
+            return "잘못된 GPS 좌표";
+
+        }
+
+
+
+        if (addresses == null || addresses.size() == 0) {
+            Toast.makeText(this, "주소 미발견", Toast.LENGTH_LONG).show();
+            return "주소 미발견";
+
+        }
+
+        Address address = addresses.get(0);
+        return address.getAddressLine(0).toString()+"\n";
+
     }
 }
 
