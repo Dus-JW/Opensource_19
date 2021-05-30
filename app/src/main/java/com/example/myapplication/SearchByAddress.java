@@ -24,6 +24,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -35,7 +36,7 @@ public class SearchByAddress {
     private StringBuilder xmlString;
     private ChargeStationInfo[] Stations;
     private int Station_size;
-
+    private int temp_size;
     public SearchByAddress() {
         this.xmlString = new StringBuilder();
     }
@@ -116,6 +117,27 @@ public class SearchByAddress {
     public int getStation_size() {
         return Station_size;
     }
+    public int getTemp_size() {
+        return temp_size;
+    }
+    public ChargeStationInfo[] getSameStation(String name){
+        int i = 0;
+        ArrayList same = new ArrayList();
+        for(i=0; i < Station_size; i++){
+            if(name.equals(Stations[i].getCsNm())){
+                same.add(i);
+            }
+        }
+        temp_size = same.size();
+        ChargeStationInfo[] temp = new ChargeStationInfo[same.size()];
+        for(int j = 0; j < same.size();j++){
+            temp[j] = new ChargeStationInfo();
+            temp[j] = Stations[(int) same.get(j)];
+        }
+
+        return temp;
+    }
+
 //    @Override
 //    protected void onPreExecute(){
 //

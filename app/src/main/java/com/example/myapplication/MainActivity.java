@@ -61,7 +61,7 @@ import java.util.concurrent.Future;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener{
+public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener, MapView.POIItemEventListener{
     GpsTracker gpsTracker;
     private static final String LOG_TAG = "MainActivity";
     private MapView mapView;
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
 
         MapView mapView = new MapView(this);
-
+        mapView.setPOIItemEventListener(this);  //마커 클릭했을 때 행동 가능하게 리스너 동록
         ViewGroup mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
         mapViewContainer.addView(mapView);
         mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(lati, longi), true);
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         MapPOIItem[] marker = new MapPOIItem[search_result.getStation_size()];
         for(int i = 0; i <search_result.getStation_size(); i++){
             marker[i] = new MapPOIItem();
-            marker[i].setItemName("Default Marker" + i);
+            marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
             marker[i].setTag(i);
             Log.d("station get", "" + search_result.getStations()[i].getLat());
             Log.d("station get", "" + search_result.getStations()[i].getLongi());
@@ -142,18 +142,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         mapView.addPOIItems(marker);
 
-
-
-
         //여기까지 주석
-    }
-
-    public class NetworkThread extends AsyncTask{
-
-        @Override
-        protected Object doInBackground(Object[] objects) {
-            return null;
-        }
     }
 
     private void getHashKey(){
@@ -499,6 +488,40 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         Address address = addresses.get(0);
         return address.getAddressLine(0).toString()+"\n";
+
+    }
+
+    @Override
+    public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem) { //마커를 터치하면 충전기 등 정보가 나오게 하자
+        int station_index = mapPOIItem.getTag();
+        ChargeStationInfo[] touchInfo = search_result.getSameStation(mapPOIItem.getItemName());
+        String temp = "";
+        for(int i = 0;i < search_result.getTemp_size(); i++){
+            temp += "type="+touchInfo[i].getCpTp() +" ";
+            if(touchInfo[i].getCpStat() == 1){
+                temp += "can charge="+touchInfo[i].getCpStat() +" ";
+            }
+            else{
+                temp += "can't charge error="+touchInfo[i].getCpStat() +" ";
+            }
+        }
+
+        Toast myToast = Toast.makeText(getApplicationContext(), temp, Toast.LENGTH_SHORT);
+        myToast.show();
+    }
+
+    @Override
+    public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem) {
+
+    }
+
+    @Override
+    public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem, MapPOIItem.CalloutBalloonButtonType calloutBalloonButtonType) {
+
+    }
+
+    @Override
+    public void onDraggablePOIItemMoved(MapView mapView, MapPOIItem mapPOIItem, MapPoint mapPoint) {
 
     }
 }
