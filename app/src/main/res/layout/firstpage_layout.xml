@@ -65,19 +65,7 @@ tools:context=".MainActivity">
     android:text="@string/My_Car_Info"
     android:textColor="@color/gray"
     android:textSize="12sp" />
-<Button
-    android:id="@+id/F_button5"
-    android:layout_width="90dp"
-    android:layout_height="40dp"
-    android:layout_y="390dp"
-    android:background="@drawable/buttonshape5"
-    android:shadowColor="@color/gray"
-    android:shadowDx="1"
-    android:shadowDy="1"
-    android:shadowRadius="1"
-    android:text="@string/Emergency"
-    android:textColor="@color/gray"
-    android:textSize="12sp" />
+
 </AbsoluteLayout>
 
 </FrameLayout>
