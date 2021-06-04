@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ball_view"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="4px"
+    android:background="#E88282"
+    app:cardCornerRadius="8px">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="250dp"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/balloon_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:text="업체"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/balloon_cpTp10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="급/완  종류10 총몇대중 몇개가능"
+            android:textSize="10sp"
+            app:layout_constraintStart_toStartOf="@+id/balloon_title"
+            app:layout_constraintTop_toBottomOf="@+id/balloon_title" />
+
+        <TextView
+            android:id="@+id/balloon_cpTp9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="급/완  종류9 총몇대중 몇개가능"
+            android:textSize="10sp"
+            app:layout_constraintStart_toStartOf="@+id/balloon_title"
+            app:layout_constraintTop_toBottomOf="@+id/balloon_cpTp10" />
+
+        <TextView
+            android:id="@+id/balloon_cpTp8"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="급/완  종류8 총몇대중 몇개가능"
+            android:textSize="10sp"
+            app:layout_constraintStart_toStartOf="@+id/balloon_title"
+            app:layout_constraintTop_toBottomOf="@+id/balloon_cpTp9" />
+
+        <TextView
+            android:id="@+id/balloon_cpTp7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="급/완  종류7 총몇대중 몇개가능"
+            android:textSize="10sp"
+            app:layout_constraintStart_toStartOf="@+id/balloon_title"
+            app:layout_constraintTop_toBottomOf="@+id/balloon_cpTp8" />
+
+        <TextView
+            android:id="@+id/balloon_cpTp6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="급/완  종류6 총몇대중 몇개가능"
+            android:textSize="10sp"
+            app:layout_constraintStart_toStartOf="@+id/balloon_title"
+            app:layout_constraintTop_toBottomOf="@+id/balloon_cpTp7" />
+
+        <TextView
+            android:id="@+id/balloon_cpTp5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="급/완  종류5 총몇대중 몇개가능"
+            android:textSize="10sp"
+            app:layout_constraintStart_toStartOf="@+id/balloon_title"
+            app:layout_constraintTop_toBottomOf="@+id/balloon_cpTp6" />
+
+        <TextView
+            android:id="@+id/balloon_cpTp4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="급/완  종류4 총몇대중 몇개가능"
+            android:textSize="10sp"
+            app:layout_constraintStart_toStartOf="@+id/balloon_title"
+            app:layout_constraintTop_toBottomOf="@+id/balloon_cpTp5" />
+
+        <TextView
+            android:id="@+id/balloon_cpTp3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="급/완  종류3 총몇대중 몇개가능"
+            android:textSize="10sp"
+            app:layout_constraintStart_toStartOf="@+id/balloon_title"
+            app:layout_constraintTop_toBottomOf="@+id/balloon_cpTp4" />
+
+        <TextView
+            android:id="@+id/balloon_cpTp2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="급/완  종류2 총몇대중 몇개가능"
+            android:textSize="10sp"
+            app:layout_constraintStart_toStartOf="@+id/balloon_title"
+            app:layout_constraintTop_toBottomOf="@+id/balloon_cpTp3" />
+
+        <TextView
+            android:id="@+id/balloon_cpTp1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="급/완  종류1 총몇대중 몇개가능"
+            android:textSize="10sp"
+            app:layout_constraintStart_toStartOf="@+id/balloon_title"
+            app:layout_constraintTop_toBottomOf="@+id/balloon_cpTp2" />
+
+
+        <TextView
+            android:id="@+id/balloon_cpId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="고유id"
+            android:textSize="10sp"
+            app:layout_constraintStart_toStartOf="@+id/balloon_cpTp1"
+            app:layout_constraintTop_toBottomOf="@+id/balloon_cpTp1" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="카카오맵으로 열기"
+            android:textSize="10sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/balloon_cpTp1" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
