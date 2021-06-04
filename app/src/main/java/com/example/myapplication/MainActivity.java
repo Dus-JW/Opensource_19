@@ -9,6 +9,7 @@ import android.content.pm.Signature;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -521,7 +522,13 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     @Override
     public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem, MapPOIItem.CalloutBalloonButtonType calloutBalloonButtonType) {
+        Toast myToast = Toast.makeText(getApplicationContext(), "말풍선 클릭", Toast.LENGTH_SHORT);
+        myToast.show();
 
+        String url = "kakaomap://route?sp="+ gpsTracker.getLatitude() +","+gpsTracker.getLongitude();
+        url += "&ep="+ mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude+","+ mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude+"&by=CAR";
+        Intent it = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(it);
     }
 
     @Override
