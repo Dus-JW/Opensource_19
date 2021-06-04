@@ -85,30 +85,58 @@ public class SearchByAddress {
 
         Stations = new ChargeStationInfo[item.getLength()];
         Station_size = item.getLength();
+        int current_station_num = 0;
+        int station_index = 0;
         for(int i = 0; i < item.getLength(); i++){
             Node node = item.item(i);
             NodeList node_list = node.getChildNodes();
+            if(i == 4){
+                i = 4;
+            }
             Log.d("intheapi",node_list.item(0).getFirstChild().getNodeValue());
-            Stations[i] = new ChargeStationInfo();
-            Stations[i].setAddr(node_list.item(0).getFirstChild().getNodeValue());
-            Stations[i].setChargeTp(Integer.parseInt(node_list.item(1).getFirstChild().getNodeValue()));
-            Stations[i].setCpId(Integer.parseInt(node_list.item(2).getFirstChild().getNodeValue()));
-            Stations[i].setCpNm(node_list.item(3).getFirstChild().getNodeValue());
-            Stations[i].setCpStat(Integer.parseInt(node_list.item(4).getFirstChild().getNodeValue()));
-            Stations[i].setCpTp(Integer.parseInt(node_list.item(5).getFirstChild().getNodeValue()));
-            Stations[i].setCsId(Integer.parseInt(node_list.item(6).getFirstChild().getNodeValue()));
-            Stations[i].setCsNm(node_list.item(7).getFirstChild().getNodeValue());
-            Stations[i].setLat(Double.parseDouble(node_list.item(8).getFirstChild().getNodeValue()));
-            Stations[i].setLongi(Double.parseDouble(node_list.item(9).getFirstChild().getNodeValue()));
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            Stations[i].setStatUpdateDateTime(sdf.parse(node_list.item(10).getFirstChild().getNodeValue()));
+            //이미 있는 스테이션인지 확인 후 있으면 정보 추가
+            boolean midluck = false;
+            int j = 0;
+            for(j = 0; j < current_station_num ; j++){
+                if(Stations[j].getAddr().equals(node_list.item(0).getFirstChild().getNodeValue())){
+                    midluck = true;
+                    break;
+                }
+            }
+            if(midluck == true){
+                Stations[j].machines[Stations[j].machines_size] = new ChargeMachine();
+                Stations[j].machines[Stations[j].machines_size].setChargeTp(Integer.parseInt(node_list.item(1).getFirstChild().getNodeValue()));
+                Stations[j].machines[Stations[j].machines_size].setCpId(Integer.parseInt(node_list.item(2).getFirstChild().getNodeValue()));
+                Stations[j].machines[Stations[j].machines_size].setCpNm(node_list.item(3).getFirstChild().getNodeValue());
+                Stations[j].machines[Stations[j].machines_size].setCpStat(Integer.parseInt(node_list.item(4).getFirstChild().getNodeValue()));
+                Stations[j].machines[Stations[j].machines_size].setCpTp(Integer.parseInt(node_list.item(5).getFirstChild().getNodeValue()));
+                Stations[j].machines[Stations[j].machines_size].setCsId(Integer.parseInt(node_list.item(6).getFirstChild().getNodeValue()));
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Stations[j].machines[Stations[j].machines_size].setStatUpdateDateTime(sdf.parse(node_list.item(10).getFirstChild().getNodeValue()));
+                Stations[j].setMachines_size(Stations[j].machines_size + 1);
+                continue;
 
-//            for(int j = 0; j<node_list.getLength();j++){
-//                System.out.println(node_list.item(j).getNodeName());
-//                System.out.println(node_list.item(j).getFirstChild().getNodeValue());
-//            }
-//            System.out.println("-----------------------------------------");
+            }
+            Stations[station_index] = new ChargeStationInfo();
+            Stations[station_index].setAddr(node_list.item(0).getFirstChild().getNodeValue());
+            Stations[station_index].setMachines(new ChargeMachine[50]);
+            Stations[station_index].machines[0] = new ChargeMachine();
+            Stations[station_index].machines[0].setChargeTp(Integer.parseInt(node_list.item(1).getFirstChild().getNodeValue()));
+            Stations[station_index].machines[0].setCpId(Integer.parseInt(node_list.item(2).getFirstChild().getNodeValue()));
+            Stations[station_index].machines[0].setCpNm(node_list.item(3).getFirstChild().getNodeValue());
+            Stations[station_index].machines[0].setCpStat(Integer.parseInt(node_list.item(4).getFirstChild().getNodeValue()));
+            Stations[station_index].machines[0].setCpTp(Integer.parseInt(node_list.item(5).getFirstChild().getNodeValue()));
+            Stations[station_index].machines[0].setCsId(Integer.parseInt(node_list.item(6).getFirstChild().getNodeValue()));
+            Stations[station_index].setCsNm(node_list.item(7).getFirstChild().getNodeValue());
+            Stations[station_index].setLat(Double.parseDouble(node_list.item(8).getFirstChild().getNodeValue()));
+            Stations[station_index].setLongi(Double.parseDouble(node_list.item(9).getFirstChild().getNodeValue()));
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Stations[station_index].machines[0].setStatUpdateDateTime(sdf.parse(node_list.item(10).getFirstChild().getNodeValue()));
+            Stations[station_index].setMachines_size(1);
+            current_station_num++;
+            station_index++;
         }
+        Station_size = current_station_num;
     }
 
     public ChargeStationInfo[] getStations() {

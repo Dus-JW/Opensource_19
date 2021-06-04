@@ -495,14 +495,18 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem) { //마커를 터치하면 충전기 등 정보가 나오게 하자
         int station_index = mapPOIItem.getTag();
         ChargeStationInfo[] touchInfo = search_result.getSameStation(mapPOIItem.getItemName());
-        String temp = "";
-        for(int i = 0;i < search_result.getTemp_size(); i++){
-            temp += "type="+touchInfo[i].getCpTp() +" ";
-            if(touchInfo[i].getCpStat() == 1){
-                temp += "can charge="+touchInfo[i].getCpStat() +" ";
-            }
-            else{
-                temp += "can't charge error="+touchInfo[i].getCpStat() +" ";
+        String temp = "there is ";
+        for(int i = 0;i < search_result.getStation_size(); i++){
+            if(mapPOIItem.getItemName().equals(search_result.getStations()[i].getCsNm())){
+                temp += search_result.getStations()[i].machines_size + " stations possible is ";
+                int able = 0;
+                for(int j = 0; j < search_result.getStations()[i].machines_size; j++){
+                    if(search_result.getStations()[i].machines[j].getCpStat() == 1){
+                        able++;
+                    }
+                }
+                temp += able + "";
+                break;
             }
         }
 
