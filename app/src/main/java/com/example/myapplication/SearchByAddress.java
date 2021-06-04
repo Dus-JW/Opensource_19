@@ -90,9 +90,6 @@ public class SearchByAddress {
         for(int i = 0; i < item.getLength(); i++){
             Node node = item.item(i);
             NodeList node_list = node.getChildNodes();
-            if(i == 4){
-                i = 4;
-            }
             Log.d("intheapi",node_list.item(0).getFirstChild().getNodeValue());
             //이미 있는 스테이션인지 확인 후 있으면 정보 추가
             boolean midluck = false;

@@ -24,6 +24,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
 
@@ -39,9 +40,13 @@ import androidx.navigation.ui.NavigationUI;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import net.daum.mf.map.api.CalloutBalloonAdapter;
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapView;
@@ -52,6 +57,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -61,6 +67,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.xml.parsers.ParserConfigurationException;
+
+import static android.util.TypedValue.COMPLEX_UNIT_SP;
 
 public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener, MapView.POIItemEventListener{
     GpsTracker gpsTracker;
@@ -74,7 +82,138 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     SearchByAddress search_result;
     String current_address;
 
+    class CustomCalloutBalloonAdapter implements CalloutBalloonAdapter {
+        private final View mCalloutBalloon;
 
+        public CustomCalloutBalloonAdapter() {
+            mCalloutBalloon = getLayoutInflater().inflate(R.layout.custom_balloon, null);
+        }
+
+        @Override
+        public View getCalloutBalloon(MapPOIItem poiItem) {
+            //((ImageView) mCalloutBalloon.findViewById(R.id.badge)).setImageResource(R.drawable.ic_launcher);
+            ChargeStationInfo marker = new ChargeStationInfo();
+            for(int i =0 ; i < search_result.getStation_size(); i++){
+                if(search_result.getStations()[i].getCsNm().equals(poiItem.getItemName())){
+                    marker = search_result.getStations()[i];
+                    break;
+                }
+            }
+            int[] total = new int[10];
+            int[] able = new int[10];
+            int[] fast_slow = new int[10];  //1 완속 2 급속
+            for(int i = 0; i < marker.getMachines_size(); i++){
+                total[marker.getMachines()[i].getCpTp() - 1]++;
+                if(marker.getMachines()[i].getCpStat() == 1){
+                    able[marker.getMachines()[i].getCpTp() - 1]++;
+                }
+                if(marker.getMachines()[i].getChargeTp() == 1){
+                    fast_slow[marker.getMachines()[i].getCpTp() - 1] = 1;
+                }
+                if(marker.getMachines()[i].getChargeTp() == 2){
+                    fast_slow[marker.getMachines()[i].getCpTp() - 1] = 2;
+                }
+            }
+            ((TextView) mCalloutBalloon.findViewById(R.id.balloon_title)).setText(marker.getCsNm());
+
+            String[] temp_zip = new String[10];
+            String[] type = {"B타입(5핀)","C타입(5핀)", "BC타입(5핀)","BC타입(7핀)", "DC차데모","AC3상", "DC콤보","DC차데모+DC콤보", "DC차데모+AC3상","DC차데모+DC콤보+AC3상"};
+            for(int i = 0; i < 10; i++) {
+                String temp = "";
+                if (fast_slow[i] == 1) {
+                    temp += "급속 ";
+                } else {
+                    temp += "완속 ";
+                }
+                temp += type[i]+" 총 " + total[i] + "개 중 " + able[i] + "개 작동";
+                temp_zip[i] = temp;
+            }
+
+            while(true) {
+                if (able[9] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp10)).setText(temp_zip[9]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp10)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp10)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp10)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[8] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp9)).setText(temp_zip[8]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp9)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp9)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp9)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[7] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp8)).setText(temp_zip[7]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp8)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp8)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp8)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[6] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp7)).setText(temp_zip[6]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp7)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp7)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp7)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[5] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp6)).setText(temp_zip[5]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp6)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp6)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp6)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[4] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp5)).setText(temp_zip[4]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp5)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp5)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp5)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[3] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp4)).setText(temp_zip[3]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp4)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp4)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp4)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[2] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp3)).setText(temp_zip[2]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp3)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp3)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp3)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[1] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp2)).setText(temp_zip[1]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp2)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp2)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp2)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[0] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp1)).setText(temp_zip[0]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp1)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp1)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp1)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                break;
+            }
+
+            return mCalloutBalloon;
+
+        }
+
+        @Override
+        public View getPressedCalloutBalloon(MapPOIItem poiItem) {
+            return mCalloutBalloon;
+//            return null;
+        }
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +262,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
 
         MapView mapView = new MapView(this);
+        mapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter());    //커스텀 말풍선 세팅
         mapView.setPOIItemEventListener(this);  //마커 클릭했을 때 행동 가능하게 리스너 동록
         ViewGroup mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
         mapViewContainer.addView(mapView);
@@ -522,9 +662,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     @Override
     public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem, MapPOIItem.CalloutBalloonButtonType calloutBalloonButtonType) {
-        Toast myToast = Toast.makeText(getApplicationContext(), "말풍선 클릭", Toast.LENGTH_SHORT);
-        myToast.show();
-
         String url = "kakaomap://route?sp="+ gpsTracker.getLatitude() +","+gpsTracker.getLongitude();
         url += "&ep="+ mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude+","+ mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude+"&by=CAR";
         Intent it = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -536,4 +673,3 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     }
 }
-
