@@ -39,7 +39,9 @@
         </activity>
 
         <!-- 긴급 액티비티-->
-        <activity android:name=".Emergency">
+        <activity
+            android:name=".Emergency"
+            android:theme="@style/Theme.MyApplication.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
