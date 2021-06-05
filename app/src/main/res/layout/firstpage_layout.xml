@@ -36,8 +36,9 @@ tools:context=".MainActivity">
     android:shadowDx="1"
     android:shadowDy="1"
     android:shadowRadius="1"
+    android:fontFamily="@font/nanumbarunpenr"
     android:text="@string/Find_mapping"
-    android:textColor="@color/gray"
+    android:textColor="@color/black"
     android:textSize="12sp" />
 <Button
     android:id="@+id/F_button3"
@@ -49,8 +50,9 @@ tools:context=".MainActivity">
     android:shadowDx="1"
     android:shadowDy="1"
     android:shadowRadius="1"
+    android:fontFamily="@font/nanumbarunpenr"
     android:text="@string/Arrange_Info"
-    android:textColor="@color/gray"
+    android:textColor="@color/black"
     android:textSize="12sp" />
 <Button
     android:id="@+id/F_button4"
@@ -62,8 +64,9 @@ tools:context=".MainActivity">
     android:shadowDx="1"
     android:shadowDy="1"
     android:shadowRadius="1"
+    android:fontFamily="@font/nanumbarunpenr"
     android:text="@string/My_Car_Info"
-    android:textColor="@color/gray"
+    android:textColor="@color/black"
     android:textSize="12sp" />
 
 </AbsoluteLayout>
