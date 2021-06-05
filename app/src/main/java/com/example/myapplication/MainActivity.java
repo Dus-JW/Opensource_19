@@ -41,6 +41,7 @@ import androidx.navigation.ui.NavigationUI;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -227,6 +228,61 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
+                Log.d("search = ", s);
+                try {
+                    search(s);
+                } catch (SAXException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (ParserConfigurationException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+
+                double[] latilongi = AddressTodouble(s);
+                if(latilongi[0] == 0.0){    //만약 주소->좌표 변환이 안되면 그 지역 충전소를 중심으로 설정
+                    if(search_result.getStation_size() == 0){//API에서도 검색이 안되면 종료
+                        return false;
+                    }
+                    mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[0].getLat(), search_result.getStations()[0].getLongi()), true);
+                }
+                else{//중심으로 이동
+                    mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(latilongi[0], latilongi[1]), true);
+                }
+                //확대 정도 설정
+                mapView.setZoomLevel(5,true);
+                //검색 지역에 마커 추가
+                marker = new MapPOIItem[search_result.getStation_size()];
+                for(int i = 0; i <search_result.getStation_size(); i++){
+                    marker[i] = new MapPOIItem();
+                    marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
+                    marker[i].setTag(i);
+                    Log.d("station get", "" + search_result.getStations()[i].getLat());
+                    Log.d("station get", "" + search_result.getStations()[i].getLongi());
+                    marker[i].setMapPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[i].getLat(), search_result.getStations()[i].getLongi()));
+                    marker[i].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
+                    marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+//                    mapView.addPOIItem(marker[i]);
+                }
+
+                mapView.addPOIItems(marker);
+
+                InputMethodManager manager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+                manager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
+
                 return true;
             }
 
@@ -243,7 +299,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
 
         /***************************************************/
-        /*
+
         //AVD에서 돌릴땐 여기서 부터
         gpsTracker = new GpsTracker(MainActivity.this);
         double lati = gpsTracker.getLatitude();
@@ -295,7 +351,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mapView.addPOIItems(marker);
 
         //여기까지 주석
-        */
+
+
 //        setFilter(new String[]{"BC타입(5핀)"});
     }
 
@@ -553,6 +610,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     }
 
     public void clickBtn(View view){    //긴급상황 액티비티로 전환
+
+//        Log.d("zoomlevel = ", mapView.getZoomLevelFloat()+"");
         Intent intent = new Intent(this, Emergency.class);
         startActivity(intent);
     }
@@ -587,6 +646,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             return temp;
         });
         this.search_result = future.get();
+        if(search_result.getStation_size() == 0){
+            Toast.makeText(MainActivity.this, "API에 검색 결과가 없습니다!", Toast.LENGTH_LONG).show();
+            return;
+        }
         Log.d("api_after", "this-"+input);
         Log.d("api", "lat = " + this.search_result.getStations()[0].getLat());
         Log.d("api", "longi = " + this.search_result.getStations()[0].getLongi());
@@ -614,8 +677,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         }
 
-
-
         if (addresses == null || addresses.size() == 0) {
             Toast.makeText(this, "주소 미발견", Toast.LENGTH_LONG).show();
             return "주소 미발견";
@@ -625,6 +686,33 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         Address address = addresses.get(0);
         return address.getAddressLine(0).toString()+"\n";
 
+    }
+
+    public double[] AddressTodouble( String s) {
+
+        //지오코더... GPS를 주소로 변환
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+
+        List<Address> addresses = null;
+
+        try {
+            addresses = geocoder.getFromLocationName(s,10);
+        }
+        catch (IOException ioException) {
+        }
+        catch (IllegalArgumentException illegalArgumentException) {
+        }
+
+        if (addresses == null || addresses.size() == 0) {
+            Toast.makeText(this, "주소 미발견", Toast.LENGTH_LONG).show();
+            return new double[]{0.0, 0.0};
+        }
+
+        Address address = addresses.get(0);
+        double[] re = new double[2];
+        re[0] = address.getLatitude();
+        re[1] = address.getLongitude();
+        return re;
     }
 
     public void setFilter(String[] selects){
