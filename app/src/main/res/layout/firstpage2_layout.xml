@@ -26,17 +26,12 @@
             android:text="Button"
             android:visibility="invisible" />
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
+
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/searchView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/whiteyellow"
-            android:minHeight="?attr/actionBarSize"
-            android:theme="?attr/actionBarTheme"
-
-            />
-
-
+            android:layout_height="match_parent"
+            app:iconifiedByDefault="true" />
         <Button
             android:id="@+id/button2"
             android:layout_width="match_parent"

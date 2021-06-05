@@ -28,6 +28,7 @@ import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
 
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     SearchByAddress search_result;
     String current_address;
     MapPOIItem[] marker;
-
+    private SearchView mSearchView;
     class CustomCalloutBalloonAdapter implements CalloutBalloonAdapter {
         private final View mCalloutBalloon;
 
@@ -221,11 +222,19 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         super.onCreate(savedInstanceState);
         getHashKey();
         setContentView(R.layout.activity_main);
-        main_toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(main_toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_launcher_foreground);
-        getSupportActionBar().setTitle("");
+        mSearchView = findViewById(R.id.searchView);
+
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                return false;
+            }
+        });
 
         if (checkLocationServicesStatus()) {
             checkRunTimePermission();
@@ -234,6 +243,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
 
         /***************************************************/
+        /*
         //AVD에서 돌릴땐 여기서 부터
         gpsTracker = new GpsTracker(MainActivity.this);
         double lati = gpsTracker.getLatitude();
@@ -285,7 +295,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mapView.addPOIItems(marker);
 
         //여기까지 주석
-
+        */
 //        setFilter(new String[]{"BC타입(5핀)"});
     }
 
