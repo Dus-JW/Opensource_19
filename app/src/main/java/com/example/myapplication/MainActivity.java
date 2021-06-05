@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     Toolbar main_toolbar;
     SearchByAddress search_result;
     String current_address;
+    MapPOIItem[] marker;
 
     class CustomCalloutBalloonAdapter implements CalloutBalloonAdapter {
         private final View mCalloutBalloon;
@@ -261,14 +262,14 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             e.printStackTrace();
         }
 
-        MapView mapView = new MapView(this);
+        mapView = new MapView(this);
         mapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter());    //커스텀 말풍선 세팅
         mapView.setPOIItemEventListener(this);  //마커 클릭했을 때 행동 가능하게 리스너 동록
         ViewGroup mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
         mapViewContainer.addView(mapView);
         mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(lati, longi), true);
 
-        MapPOIItem[] marker = new MapPOIItem[search_result.getStation_size()];
+        marker = new MapPOIItem[search_result.getStation_size()];
         for(int i = 0; i <search_result.getStation_size(); i++){
             marker[i] = new MapPOIItem();
             marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
@@ -284,6 +285,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mapView.addPOIItems(marker);
 
         //여기까지 주석
+
+//        setFilter(new String[]{"BC타입(5핀)"});
     }
 
     private void getHashKey(){
@@ -575,24 +578,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         });
         this.search_result = future.get();
         Log.d("api_after", "this-"+input);
-
-//        executor.execute(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    SearchByAddress temp = this.search_result;
-//                    temp.XmlToStationList(temp.APISearch(input));
-//                } catch (ParserConfigurationException e) {
-//                    e.printStackTrace();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                } catch (SAXException e) {
-//                    e.printStackTrace();
-//                } catch (ParseException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
         Log.d("api", "lat = " + this.search_result.getStations()[0].getLat());
         Log.d("api", "longi = " + this.search_result.getStations()[0].getLongi());
     }
@@ -632,6 +617,54 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     }
 
+    public void setFilter(String[] selects){
+        String[] type = {"B타입(5핀)","C타입(5핀)", "BC타입(5핀)","BC타입(7핀)", "DC차데모","AC3상", "DC콤보","DC차데모+DC콤보", "DC차데모+AC3상","DC차데모+DC콤보+AC3상"};
+        int[] selects_int = new int[selects.length];
+        for(int i = 0 ; i < selects_int.length;i++){    //타입을 정수로 바꿈
+            for(int j = 0; j < 10; j++){
+                if(selects[i].equals(type[j])){
+                    selects_int[i] = j + 1;
+                    break;
+                }
+            }
+        }
+        List<List<Integer>> station_n = new ArrayList<>();
+        for(int i = 0 ; i < selects_int.length; i++){
+            List<Integer> row = new ArrayList<>();
+            for(int j=0; j < search_result.getStation_size(); j++){
+                if(search_result.getStations()[j].chargeType(selects_int[i]) == true){
+                    row.add(j);
+                }
+            }
+            station_n.add(row);
+        }
+        List<Integer> clean_station_list = new ArrayList<>();   //중복 제거된 버전으로바꾸기
+        for(int i = 0 ; i < station_n.size(); i++){
+            for(int j=0; j < station_n.get(i).size(); j++){
+                if(!clean_station_list.contains(station_n.get(i).get(j))){
+                    clean_station_list.add(station_n.get(i).get(j));
+                }
+            }
+        }
+
+//        mapView.removeAllPOIItems();
+        marker = new MapPOIItem[clean_station_list.size()];
+        for(int i = 0; i <clean_station_list.size(); i++){
+            int temp = clean_station_list.get(i);
+            marker[i] = new MapPOIItem();
+            marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
+            marker[i].setTag(i);
+            marker[i].setShowCalloutBalloonOnTouch(true);
+            marker[i].setMapPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[temp].getLat(), search_result.getStations()[temp].getLongi()));
+            marker[i].setMarkerType(MapPOIItem.MarkerType.YellowPin); // 기본으로 제공하는 BluePin 마커 모양.
+            marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.BluePin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+            mapView.addPOIItem(marker[i]);
+        }
+
+//        mapView.addPOIItems(marker);
+
+    }
+
     @Override
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem) { //마커를 터치하면 충전기 등 정보가 나오게 하자
         int station_index = mapPOIItem.getTag();
@@ -651,8 +684,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             }
         }
 
+
         Toast myToast = Toast.makeText(getApplicationContext(), temp, Toast.LENGTH_SHORT);
         myToast.show();
+        setFilter(new String[]{"DC콤보"});
     }
 
     @Override

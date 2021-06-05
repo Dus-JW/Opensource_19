@@ -18,6 +18,15 @@ public class ChargeStationInfo {
         this.machines_size = 0;
     }
 
+    public  boolean chargeType(int want_check){
+        for(int i = 0; i < machines_size; i++){
+            if(want_check == machines[i].getCpTp()){
+                return true;
+            }
+        }
+
+        return false;
+    }
     public String getAddr() {
         return addr;
     }
