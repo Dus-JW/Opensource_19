@@ -43,6 +43,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -82,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     SearchByAddress search_result;
     String current_address;
     MapPOIItem[] marker;
+    ArrayList<MarkerListViewData> movieDataList;
 
     class CustomCalloutBalloonAdapter implements CalloutBalloonAdapter {
         private final View mCalloutBalloon;
@@ -234,57 +236,57 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
 
         /***************************************************/
-        //AVD에서 돌릴땐 여기서 부터
-        gpsTracker = new GpsTracker(MainActivity.this);
-        double lati = gpsTracker.getLatitude();
-        double longi = gpsTracker.getLongitude();
-
-        current_address = getCurrentAddress(lati,longi);
-        Toast myToast = Toast.makeText(this.getApplicationContext(),current_address, Toast.LENGTH_SHORT);
-        myToast.show();     //현재 위치를 주소로 변환 앞에 '대한민국 '을 제거하고 사용해야함 뒤에 '동' 단위도 없애야 할듯 범위가 너무 작음
-
-        String[] cut_address = current_address.split(" ");
-
-        try {
-            search(cut_address[1]);   //현재 위치 기반으로 '시' 단위 까지 지도에 표시하기 구는 너무 작고 시단위로 해도 주변에 충전소가 많지 않다
-            //search(cut_address[1] +" " + cut_address[2]);         //현재 위치 기반으로 '구' 단위 까지 지도에 표시하기
-        } catch (SAXException e) {                                  //'구' 단위여서 구의 경계에 있으면 옆동네의 충전소가 보이지 않는다
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-
-        mapView = new MapView(this);
-        mapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter());    //커스텀 말풍선 세팅
-        mapView.setPOIItemEventListener(this);  //마커 클릭했을 때 행동 가능하게 리스너 동록
-        ViewGroup mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
-        mapViewContainer.addView(mapView);
-        mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(lati, longi), true);
-
-        marker = new MapPOIItem[search_result.getStation_size()];
-        for(int i = 0; i <search_result.getStation_size(); i++){
-            marker[i] = new MapPOIItem();
-            marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
-            marker[i].setTag(i);
-            Log.d("station get", "" + search_result.getStations()[i].getLat());
-            Log.d("station get", "" + search_result.getStations()[i].getLongi());
-            marker[i].setMapPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[i].getLat(), search_result.getStations()[i].getLongi()));
-            marker[i].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
-            marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
-//            mapView.addPOIItem(marker[i]);
-        }
-
-        mapView.addPOIItems(marker);
-
-        //여기까지 주석
+//        //AVD에서 돌릴땐 여기서 부터
+//        gpsTracker = new GpsTracker(MainActivity.this);
+//        double lati = gpsTracker.getLatitude();
+//        double longi = gpsTracker.getLongitude();
+//
+//        current_address = getCurrentAddress(lati,longi);
+//        Toast myToast = Toast.makeText(this.getApplicationContext(),current_address, Toast.LENGTH_SHORT);
+//        myToast.show();     //현재 위치를 주소로 변환 앞에 '대한민국 '을 제거하고 사용해야함 뒤에 '동' 단위도 없애야 할듯 범위가 너무 작음
+//
+//        String[] cut_address = current_address.split(" ");
+//
+//        try {
+//            search(cut_address[1]);   //현재 위치 기반으로 '시' 단위 까지 지도에 표시하기 구는 너무 작고 시단위로 해도 주변에 충전소가 많지 않다
+//            //search(cut_address[1] +" " + cut_address[2]);         //현재 위치 기반으로 '구' 단위 까지 지도에 표시하기
+//        } catch (SAXException e) {                                  //'구' 단위여서 구의 경계에 있으면 옆동네의 충전소가 보이지 않는다
+//            e.printStackTrace();
+//        } catch (ParserConfigurationException e) {
+//            e.printStackTrace();
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        }
+//
+//        mapView = new MapView(this);
+//        mapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter());    //커스텀 말풍선 세팅
+//        mapView.setPOIItemEventListener(this);  //마커 클릭했을 때 행동 가능하게 리스너 동록
+//        ViewGroup mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
+//        mapViewContainer.addView(mapView);
+//        mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(lati, longi), true);
+//
+//        marker = new MapPOIItem[search_result.getStation_size()];
+//        for(int i = 0; i <search_result.getStation_size(); i++){
+//            marker[i] = new MapPOIItem();
+//            marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
+//            marker[i].setTag(i);
+//            Log.d("station get", "" + search_result.getStations()[i].getLat());
+//            Log.d("station get", "" + search_result.getStations()[i].getLongi());
+//            marker[i].setMapPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[i].getLat(), search_result.getStations()[i].getLongi()));
+//            marker[i].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
+//            marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+////            mapView.addPOIItem(marker[i]);
+//        }
+//
+//        mapView.addPOIItems(marker);
+//
+//        //여기까지 주석
 
 //        setFilter(new String[]{"BC타입(5핀)"});
     }
@@ -543,6 +545,36 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     }
 
     public void clickBtn(View view){    //긴급상황 액티비티로 전환
+        //원래 마커를 클릭하면 뜨지만 마커가 안보이실테니
+        //이 버튼을 눌러 테스트 해보세요
+        //참고 사이트 https://lktprogrammer.tistory.com/155
+        //https://mine-it-record.tistory.com/251
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        ListView listView = findViewById(R.id.marker_listview);
+        this.InitializeMovieData();
+        MarkerListViewAdapter myAdapter = new MarkerListViewAdapter(this,movieDataList);
+        builder.setView(dialogView);
+        listView.setAdapter(myAdapter);//????
+        builder.setPositiveButton( "길찾기", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Toast myToast = Toast.makeText(getApplicationContext(), "check", Toast.LENGTH_SHORT);
+                myToast.show();
+            }
+        });
+        builder.setNeutralButton( "주변 정보", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Toast myToast = Toast.makeText(getApplicationContext(), "check", Toast.LENGTH_SHORT);
+                myToast.show();
+            }
+        });
+
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+
         Intent intent = new Intent(this, Emergency.class);
         startActivity(intent);
     }
@@ -667,8 +699,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     @Override
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem) { //마커를 터치하면 충전기 등 정보가 나오게 하자
-        int station_index = mapPOIItem.getTag();
-        ChargeStationInfo[] touchInfo = search_result.getSameStation(mapPOIItem.getItemName());
         String temp = "there is ";
         for(int i = 0;i < search_result.getStation_size(); i++){
             if(mapPOIItem.getItemName().equals(search_result.getStations()[i].getCsNm())){
@@ -683,11 +713,19 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 break;
             }
         }
-
-
         Toast myToast = Toast.makeText(getApplicationContext(), temp, Toast.LENGTH_SHORT);
         myToast.show();
-        setFilter(new String[]{"DC콤보"});
+//        setFilter(new String[]{"DC콤보"});
+
+
+    }
+    public void InitializeMovieData()
+    {
+        movieDataList = new ArrayList<MarkerListViewData>();
+
+        movieDataList.add(new MarkerListViewData(R.drawable.em, "미션임파서블","15세 이상관람가"));
+        movieDataList.add(new MarkerListViewData(R.drawable.tesla_s, "아저씨","19세 이상관람가"));
+        movieDataList.add(new MarkerListViewData(R.drawable.white, "어벤져스","12세 이상관람가"));
     }
 
     @Override
