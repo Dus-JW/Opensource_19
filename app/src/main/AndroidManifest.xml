@@ -37,6 +37,7 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+                <data android:scheme="kakaomap"/>
             </intent-filter>
         </activity>
 
@@ -51,19 +52,26 @@
             </intent-filter>
         </activity>
 
+
         <!-- 내차정보 액티비티 -->
         <activity
             android:name=".MyCarInfoActivity">
+
+        <!-- 팝업 액티비티-->
+        <activity android:name=".CustomNotiActivity"
+            android:theme="@android:style/Theme.Holo.Dialog">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+
         </activity>
 
         <meta-data
             android:name="com.kakao.sdk.AppKey"
             android:value="5b32df2649ca3a1d274297fadc86d29d" />
+
     </application>
 
 </manifest>

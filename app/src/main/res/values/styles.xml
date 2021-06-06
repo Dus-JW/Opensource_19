@@ -1,10 +1,17 @@
-<resources>
-<style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-    <item name="colorPrimary">@color/white</item>
-    <item name="colorPrimaryDark">@color/black</item>
-</style>
-<style name="SplashTheme" parent="@android:style/Theme.Light.NoTitleBar">
-<item name="android:windowBackground">@drawable/white</item>
-</style>
+<?xml version="1.0" encoding="utf-8"?>
 
-    </resources>
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryDark">@color/black</item>
+        <!--custom font-family 적용-->
+        <item name="android:textViewStyle">@style/customTextViewFontStyle</item>
+        <item name="android:buttonStyle">@style/customButtonFontStyle</item>
+        <item name="android:editTextStyle">@style/customEditTextFontStyle</item>
+        <item name="android:radioButtonStyle">@style/customRadioButtonFontStyle</item>
+        <item name="android:checkboxStyle">@style/customCheckboxFontStyle</item>
+    </style>
+    <style name="SplashTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">@drawable/white</item>
+    </style>
+</resources>

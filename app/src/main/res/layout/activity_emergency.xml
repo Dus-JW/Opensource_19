@@ -25,6 +25,7 @@
         android:layout_y="48dp"
         android:background="@color/white"
         android:drawableTop="@drawable/tesla_sxml"
+        android:fontFamily="@font/nanumbarunpenb"
         android:text="@string/Tesla_s_2016"
         android:textColor="@color/black"
         android:textSize="15sp"
@@ -37,7 +38,9 @@
         android:layout_height="368dp"
         android:layout_x="0dp"
         android:layout_y="359dp"
-        android:text="                                  테슬라 모델 S 2016-2018년식\n\n  - 점검 혹은 사고시, 절대로 주황색 고전압 구성 요소 또는 케이블을 절단, 파손하지 마십시오. \n  - 고전압 케이블 및 구성 요소는 작동 중지 후 최대 2분간 통전 상태를 유지할 수 있습니다.\n  - 고압 배터리에 난 불은 물로 소화해야 합니다. 배터리가 불이 붙거나 고열을 받거나, 열 또는 가스를 방출하는 경우 대량의 물로 배터리의 열을 식히십시오.\n  - 충전소와 관련된 화재가 발생하면 충전기의 전원을 차단할 때까지 통전된 전기 화재로 취급하십시오.\n  - 이 차량에는 내연 기관이 없습니다. 엔진 소리가 나지 않더라도 차량의 시동이 켜져 있을 수 있습니다. 전기적 기능은 차량이 완전히 꺼질 때까지 존재합니다."
+        android:fontFamily="@font/nanumbarunpenr"
+        android:text="                                  테슬라 모델 S 2016-2018년식\n\n  - 점검 혹은 사고시, 절대로 주황색 고전압 구성 요소 또는 케이블을 절단, 파손하지 마십시오. \n\n  - 고전압 케이블 및 구성 요소는 작동 중지 후 최대 2분간 통전 상태를 유지할 수 있습니다.\n\n  - 고압 배터리에 난 불은 물로 소화해야 합니다. 배터리가 불이 붙거나 고열을 받거나, 열 또는 가스를 방출하는 경우 대량의 물로 배터리의 열을 식히십시오.\n\n  - 충전소와 관련된 화재가 발생하면 충전기의 전원을 차단할 때까지 통전된 전기 화재로 취급하십시오.\n\n  - 이 차량에는 내연 기관이 없습니다. 엔진 소리가 나지 않더라도 차량의 시동이 켜져 있을 수 있습니다. 전기적 기능은 차량이 완전히 꺼질 때까지 존재합니다."
+        android:textColor="@color/black"
         tools:layout_editor_absoluteX="2dp"
         tools:layout_editor_absoluteY="360dp" />
 

@@ -1,12 +1,17 @@
 package com.example.myapplication;
 
+import android.app.Activity;
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.LocationManager;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -16,11 +21,16 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
+import android.view.Window;
 
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -33,18 +43,39 @@ import androidx.navigation.ui.NavigationUI;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import net.daum.mf.map.api.CalloutBalloonAdapter;
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapView;
 
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener{
+import javax.xml.parsers.ParserConfigurationException;
+
+import static android.util.TypedValue.COMPLEX_UNIT_SP;
+
+public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener, MapView.POIItemEventListener{
     GpsTracker gpsTracker;
     private static final String LOG_TAG = "MainActivity";
     private MapView mapView;
@@ -53,17 +84,224 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private static final int PERMISSIONS_REQUEST_CODE = 100;
     String[] REQUIRED_PERMISSIONS  = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
     Toolbar main_toolbar;
+    SearchByAddress search_result;
+    String current_address;
+    MapPOIItem[] marker;
+    private SearchView mSearchView;
+    class CustomCalloutBalloonAdapter implements CalloutBalloonAdapter {
+        private final View mCalloutBalloon;
+
+        public CustomCalloutBalloonAdapter() {
+            mCalloutBalloon = getLayoutInflater().inflate(R.layout.custom_balloon, null);
+        }
+
+        @Override
+        public View getCalloutBalloon(MapPOIItem poiItem) {
+            //((ImageView) mCalloutBalloon.findViewById(R.id.badge)).setImageResource(R.drawable.ic_launcher);
+            ChargeStationInfo marker = new ChargeStationInfo();
+            for(int i =0 ; i < search_result.getStation_size(); i++){
+                if(search_result.getStations()[i].getCsNm().equals(poiItem.getItemName())){
+                    marker = search_result.getStations()[i];
+                    break;
+                }
+            }
+            int[] total = new int[10];
+            int[] able = new int[10];
+            int[] fast_slow = new int[10];  //1 완속 2 급속
+            for(int i = 0; i < marker.getMachines_size(); i++){
+                total[marker.getMachines()[i].getCpTp() - 1]++;
+                if(marker.getMachines()[i].getCpStat() == 1){
+                    able[marker.getMachines()[i].getCpTp() - 1]++;
+                }
+                if(marker.getMachines()[i].getChargeTp() == 1){
+                    fast_slow[marker.getMachines()[i].getCpTp() - 1] = 1;
+                }
+                if(marker.getMachines()[i].getChargeTp() == 2){
+                    fast_slow[marker.getMachines()[i].getCpTp() - 1] = 2;
+                }
+            }
+            ((TextView) mCalloutBalloon.findViewById(R.id.balloon_title)).setText(marker.getCsNm());
+
+            String[] temp_zip = new String[10];
+            String[] type = {"B타입(5핀)","C타입(5핀)", "BC타입(5핀)","BC타입(7핀)", "DC차데모","AC3상", "DC콤보","DC차데모+DC콤보", "DC차데모+AC3상","DC차데모+DC콤보+AC3상"};
+            for(int i = 0; i < 10; i++) {
+                String temp = "";
+                if (fast_slow[i] == 1) {
+                    temp += "급속 ";
+                } else {
+                    temp += "완속 ";
+                }
+                temp += type[i]+" 총 " + total[i] + "개 중 " + able[i] + "개 작동";
+                temp_zip[i] = temp;
+            }
+
+            while(true) {
+                if (able[9] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp10)).setText(temp_zip[9]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp10)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp10)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp10)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[8] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp9)).setText(temp_zip[8]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp9)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp9)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp9)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[7] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp8)).setText(temp_zip[7]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp8)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp8)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp8)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[6] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp7)).setText(temp_zip[6]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp7)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp7)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp7)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[5] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp6)).setText(temp_zip[5]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp6)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp6)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp6)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[4] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp5)).setText(temp_zip[4]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp5)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp5)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp5)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[3] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp4)).setText(temp_zip[3]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp4)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp4)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp4)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[2] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp3)).setText(temp_zip[2]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp3)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp3)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp3)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[1] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp2)).setText(temp_zip[1]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp2)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp2)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp2)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                if (able[0] >= 1) {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp1)).setText(temp_zip[0]);
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp1)).setTextSize(COMPLEX_UNIT_SP, 10);
+                } else {
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp1)).setText("");
+                    ((TextView) mCalloutBalloon.findViewById(R.id.balloon_cpTp1)).setTextSize(COMPLEX_UNIT_SP, 0);
+                }
+                break;
+            }
+
+            return mCalloutBalloon;
+
+        }
+
+        @Override
+        public View getPressedCalloutBalloon(MapPOIItem poiItem) {
+            return mCalloutBalloon;
+//            return null;
+        }
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getHashKey();
         setContentView(R.layout.activity_main);
-        main_toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(main_toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_launcher_foreground);
-        getSupportActionBar().setTitle("");
+
+        search_result = null;
+        mSearchView = findViewById(R.id.searchView);
+
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                if(s.equals("리셋")){
+                    resetFilter();
+                    return true;
+                }
+
+                Log.d("search = ", s);
+                try {
+                    search(s);
+                } catch (SAXException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (ParserConfigurationException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+
+                double[] latilongi = AddressTodouble(s);
+                if(latilongi[0] == 0.0){    //만약 주소->좌표 변환이 안되면 그 지역 충전소를 중심으로 설정
+                    if(search_result.getStation_size() == 0){//API에서도 검색이 안되면 종료
+                        return false;
+                    }
+                    mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[0].getLat(), search_result.getStations()[0].getLongi()), true);
+                }
+                else{//중심으로 이동
+                    mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(latilongi[0], latilongi[1]), true);
+                }
+                //확대 정도 설정
+                mapView.setZoomLevel(5,true);
+                //검색 지역에 마커 추가
+                marker = new MapPOIItem[search_result.getStation_size()];
+                for(int i = 0; i <search_result.getStation_size(); i++){
+                    marker[i] = new MapPOIItem();
+                    marker[i].setShowCalloutBalloonOnTouch(false);  //말풍선 안보이게 하기
+                    marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
+                    marker[i].setTag(i);
+                    Log.d("station get", "" + search_result.getStations()[i].getLat());
+                    Log.d("station get", "" + search_result.getStations()[i].getLongi());
+                    marker[i].setMapPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[i].getLat(), search_result.getStations()[i].getLongi()));
+                    marker[i].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
+                    marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+//                    mapView.addPOIItem(marker[i]);
+                }
+
+                mapView.addPOIItems(marker);
+
+                InputMethodManager manager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+                manager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
+
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                return false;
+            }
+        });
 
         if (checkLocationServicesStatus()) {
             checkRunTimePermission();
@@ -83,29 +321,62 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         
         
         /***************************************************/
+
         //AVD에서 돌릴땐 여기서 부터
         gpsTracker = new GpsTracker(MainActivity.this);
         double lati = gpsTracker.getLatitude();
         double longi = gpsTracker.getLongitude();
 
-        MapView mapView = new MapView(this);
+        current_address = getCurrentAddress(lati,longi);
+        Toast myToast = Toast.makeText(this.getApplicationContext(),current_address, Toast.LENGTH_SHORT);
+        myToast.show();     //현재 위치를 주소로 변환 앞에 '대한민국 '을 제거하고 사용해야함 뒤에 '동' 단위도 없애야 할듯 범위가 너무 작음
 
+        String[] cut_address = current_address.split(" ");
+
+        try {
+            search(cut_address[1]);   //현재 위치 기반으로 '시' 단위 까지 지도에 표시하기 구는 너무 작고 시단위로 해도 주변에 충전소가 많지 않다
+            //search(cut_address[1] +" " + cut_address[2]);         //현재 위치 기반으로 '구' 단위 까지 지도에 표시하기
+        } catch (SAXException e) {                                  //'구' 단위여서 구의 경계에 있으면 옆동네의 충전소가 보이지 않는다
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        mapView = new MapView(this);
+//        mapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter());    //커스텀 말풍선 세팅
+        mapView.setPOIItemEventListener(this);  //마커 클릭했을 때 행동 가능하게 리스너 동록
         ViewGroup mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
         mapViewContainer.addView(mapView);
         mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(lati, longi), true);
 
+        marker = new MapPOIItem[search_result.getStation_size()];
+        for(int i = 0; i <search_result.getStation_size(); i++){
+            marker[i] = new MapPOIItem();
+            marker[i].setShowCalloutBalloonOnTouch(false);  //말풍선 안보이게 하기
+            marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
+            marker[i].setTag(i);
+            Log.d("station get", "" + search_result.getStations()[i].getLat());
+            Log.d("station get", "" + search_result.getStations()[i].getLongi());
+            marker[i].setMapPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[i].getLat(), search_result.getStations()[i].getLongi()));
+            marker[i].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
+            marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+//            mapView.addPOIItem(marker[i]);
+        }
 
-        MapPOIItem marker = new MapPOIItem();
-        //MapPoint point = new MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633);
-        marker.setItemName("Default Marker");
-        marker.setTag(0);
-        marker.setMapPoint(MapPoint.mapPointWithGeoCoord(lati, longi));
-        marker.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
-        marker.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+        mapView.addPOIItems(marker);
 
-        mapView.addPOIItem(marker);
         //여기까지 주석
 
+
+//        setFilter(new String[]{"BC타입(5핀)"});
     }
 
     private void getHashKey(){
@@ -247,10 +518,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
-    public void clickBtn(View view){    //긴급상황 액티비티로 전환
-        Intent intent = new Intent(this, Emergency.class);
-        startActivity(intent);
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -365,5 +632,309 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
     }
 
-}
+    public void clickBtn(View view){    //긴급상황 액티비티로 전환
 
+        setFilter(new String[]{"DC콤보"});
+//        Log.d("zoomlevel = ", mapView.getZoomLevelFloat()+"");
+        Intent intent = new Intent(this, Emergency.class);
+        startActivity(intent);
+    }
+
+    /*
+    * search를 하면 search_result에 값이 갱신됨 (추가 아님!!!)
+    * 그것의 stations 배열의 값을 하나 고르고 거기서 get을 통해 필요한 정보를
+    * 가져오면 됨 ex)  search_result.getStations()[3].getLongi()
+    * 아니면
+    * */
+    void search(String input) throws SAXException, ParserConfigurationException, ParseException, IOException, ExecutionException, InterruptedException {
+        SearchByAddress result = new SearchByAddress();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        Log.d("api_before", "this-"+input);
+
+        SearchByAddress finalResult = result;
+        Future<SearchByAddress> future = executor.submit(() -> {
+            SearchByAddress temp = finalResult;
+            Log.d("api", "this-"+input);
+            try {
+                finalResult.XmlToStationList(finalResult.APISearch(input));
+            } catch (ParserConfigurationException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (SAXException e) {
+                e.printStackTrace();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            return temp;
+        });
+        result = future.get();
+        if(result.getStation_size() == 0){
+            Toast.makeText(MainActivity.this, "API에 검색 결과가 없습니다!", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if(search_result == null){
+            search_result = result;
+        }
+        else{
+            int new_size = search_result.getStation_size() + result.getStation_size();
+            ChargeStationInfo[] new_ch = new ChargeStationInfo[new_size];
+            for(int i = 0; i < new_size; i++){
+                if(i < search_result.getStation_size()){
+                    new_ch[i] = search_result.getStations()[i];
+                }
+                else{
+                    new_ch[i] = result.getStations()[i - search_result.getStation_size()];
+                }
+            }
+            search_result.setStation_size(new_size);
+            search_result.setStations(new_ch);
+
+        }
+        Log.d("api_after", "this-"+input);
+        Log.d("api", "lat = " + result.getStations()[0].getLat());
+        Log.d("api", "longi = " + result.getStations()[0].getLongi());
+    }
+
+    public String getCurrentAddress( double latitude, double longitude) {
+
+        //지오코더... GPS를 주소로 변환
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+
+        List<Address> addresses;
+
+        try {
+            addresses = geocoder.getFromLocation(
+                    latitude,
+                    longitude,
+                    7);
+        } catch (IOException ioException) {
+            //네트워크 문제
+            Toast.makeText(this, "지오코더 서비스 사용불가", Toast.LENGTH_LONG).show();
+            return "지오코더 서비스 사용불가";
+        } catch (IllegalArgumentException illegalArgumentException) {
+            Toast.makeText(this, "잘못된 GPS 좌표", Toast.LENGTH_LONG).show();
+            return "잘못된 GPS 좌표";
+
+        }
+
+        if (addresses == null || addresses.size() == 0) {
+            Toast.makeText(this, "주소 미발견", Toast.LENGTH_LONG).show();
+            return "주소 미발견";
+
+        }
+
+        Address address = addresses.get(0);
+        return address.getAddressLine(0).toString()+"\n";
+
+    }
+
+    public double[] AddressTodouble( String s) {
+
+        //지오코더... GPS를 주소로 변환
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+
+        List<Address> addresses = null;
+
+        try {
+            addresses = geocoder.getFromLocationName(s,10);
+        }
+        catch (IOException ioException) {
+        }
+        catch (IllegalArgumentException illegalArgumentException) {
+        }
+
+        if (addresses == null || addresses.size() == 0) {
+            Toast.makeText(this, "주소 미발견", Toast.LENGTH_LONG).show();
+            return new double[]{0.0, 0.0};
+        }
+
+        Address address = addresses.get(0);
+        double[] re = new double[2];
+        re[0] = address.getLatitude();
+        re[1] = address.getLongitude();
+        return re;
+    }
+
+    public void setFilter(String[] selects){
+        String[] type = {"B타입(5핀)","C타입(5핀)", "BC타입(5핀)","BC타입(7핀)", "DC차데모","AC3상", "DC콤보","DC차데모+DC콤보", "DC차데모+AC3상","DC차데모+DC콤보+AC3상"};
+        int[] selects_int = new int[selects.length];
+        for(int i = 0 ; i < selects_int.length;i++){    //타입을 정수로 바꿈
+            for(int j = 0; j < 10; j++){
+                if(selects[i].equals(type[j])){
+                    selects_int[i] = j + 1;
+                    break;
+                }
+            }
+        }
+        List<List<Integer>> station_n = new ArrayList<>();
+        for(int i = 0 ; i < selects_int.length; i++){
+            List<Integer> row = new ArrayList<>();
+            for(int j=0; j < search_result.getStation_size(); j++){
+                if(search_result.getStations()[j].chargeType(selects_int[i]) == true){
+                    row.add(j);
+                }
+            }
+            station_n.add(row);
+        }
+        List<Integer> clean_station_list = new ArrayList<>();   //중복 제거된 버전으로바꾸기
+        for(int i = 0 ; i < station_n.size(); i++){
+            for(int j=0; j < station_n.get(i).size(); j++){
+                if(!clean_station_list.contains(station_n.get(i).get(j))){
+                    clean_station_list.add(station_n.get(i).get(j));
+                }
+            }
+        }
+
+        mapView.removeAllPOIItems();
+        marker = new MapPOIItem[clean_station_list.size()];
+        for(int i = 0; i <clean_station_list.size(); i++){
+            int temp = clean_station_list.get(i);
+            marker[i] = new MapPOIItem();
+            marker[i].setShowCalloutBalloonOnTouch(false);  //말풍선 안보이게 하기
+            marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
+            marker[i].setTag(i);
+            marker[i].setShowCalloutBalloonOnTouch(true);
+            marker[i].setMapPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[temp].getLat(), search_result.getStations()[temp].getLongi()));
+            marker[i].setMarkerType(MapPOIItem.MarkerType.YellowPin); // 기본으로 제공하는 BluePin 마커 모양.
+            marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.BluePin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+            mapView.addPOIItem(marker[i]);
+        }
+
+//        mapView.addPOIItems(marker);
+
+    }
+
+    public void resetFilter(){
+        mapView.removeAllPOIItems();
+
+        marker = new MapPOIItem[search_result.getStation_size()];
+        for(int i = 0; i <search_result.getStation_size(); i++){
+            marker[i] = new MapPOIItem();
+            marker[i].setShowCalloutBalloonOnTouch(false);  //말풍선 안보이게 하기
+            marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
+            marker[i].setTag(i);
+            Log.d("station get", "" + search_result.getStations()[i].getLat());
+            Log.d("station get", "" + search_result.getStations()[i].getLongi());
+            marker[i].setMapPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[i].getLat(), search_result.getStations()[i].getLongi()));
+            marker[i].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
+            marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+//                    mapView.addPOIItem(marker[i]);
+        }
+
+        mapView.addPOIItems(marker);
+        Toast.makeText(this, "필터 리셋!", Toast.LENGTH_LONG).show();
+
+    }
+
+    @Override
+    public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem) { //마커를 터치하면 충전기 등 정보가 나오게 하자
+        String url = "kakaomap://route?sp="+ gpsTracker.getLatitude() +","+gpsTracker.getLongitude();
+        url += "&ep="+ mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude+","+ mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude+"&by=CAR";
+
+        ChargeStationInfo now = new ChargeStationInfo();
+        for(int i = 0; i < search_result.getStation_size(); i++){
+            if(mapPOIItem.getItemName().equals(search_result.getStations()[i].getCsNm())){
+                now = search_result.getStations()[i];
+                break;
+            }
+        }
+
+        String[] temp = new String[10];
+        int[] total = new int[10];
+        int[] able = new int[10];
+        String[] type = {"B타입(5핀)","C타입(5핀)", "BC타입(5핀)","BC타입(7핀)", "DC차데모","AC3상", "DC콤보","DC차데모+DC콤보", "DC차데모+AC3상","DC차데모+DC콤보+AC3상"};
+        String line = "\n";
+
+        for(int i = 0;i < now.getMachines_size(); i++){
+            total[now.getMachines()[i].getCpTp()-1]++;
+            if(now.getMachines()[i].getCpStat() == 1){
+                able[now.getMachines()[i].getCpTp()-1]++;
+            }
+        }
+        for(int i = 0;i < 10; i++){
+            temp[i] = "충전기 종류 : " + type[i] + "\n   총 "+total[i]+"개 중 "+able[i]+"개 이용 가능\n";
+            if(able[i] != 0){
+                line += temp[i];
+            }
+        }
+
+        if(line.equals("\n")){
+            line = "\n현재 이용 가능한 충전기 없음\n";
+        }
+        Intent it = new Intent(MainActivity.this, CustomNotiActivity.class);
+        it.putExtra("station_name", now.getCsNm());
+        it.putExtra("charger_info", line);
+        it.putExtra("kakao", url);
+        startActivity(it);
+
+
+//        String temp = "there is ";
+//        for(int i = 0;i < search_result.getStation_size(); i++){
+//            if(mapPOIItem.getItemName().equals(search_result.getStations()[i].getCsNm())){
+//                temp += search_result.getStations()[i].machines_size + " stations possible is ";
+//                int able = 0;
+//                for(int j = 0; j < search_result.getStations()[i].machines_size; j++){
+//                    if(search_result.getStations()[i].machines[j].getCpStat() == 1){
+//                        able++;
+//                    }
+//                }
+//                temp += able + "";
+//                break;
+//            }
+//        }
+//
+//        Toast myToast = Toast.makeText(getApplicationContext(), temp, Toast.LENGTH_SHORT);
+//        myToast.show();
+//        setFilter(new String[]{"DC콤보"});
+    }
+
+    @Override
+    public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem) {
+
+    }
+
+    @Override
+    public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem, MapPOIItem.CalloutBalloonButtonType calloutBalloonButtonType) {
+//        View dialogView = getLayoutInflater().inflate(R.layout.custom_noti, null);
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        builder.setView(dialogView);
+//        builder.setPositiveButton( "길찾기", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                Toast myToast = Toast.makeText(getApplicationContext(), "check", Toast.LENGTH_SHORT);
+//                myToast.show();
+//                String url = "kakaomap://route?sp="+ gpsTracker.getLatitude() +","+gpsTracker.getLongitude();
+//                url += "&ep="+ mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude+","+ mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude+"&by=CAR";
+//                Intent it = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+//                startActivity(it);
+//
+//            }
+//        });
+//        builder.setNeutralButton( "주변 정보", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                Toast myToast = Toast.makeText(getApplicationContext(), "check", Toast.LENGTH_SHORT);
+//                myToast.show();
+//            }
+//        });
+//
+//        AlertDialog alertDialog = builder.create();
+//        alertDialog.show();
+
+        setFilter(new String[]{"DC콤보"});
+
+
+//        String url = "kakaomap://route?sp="+ gpsTracker.getLatitude() +","+gpsTracker.getLongitude();
+//        url += "&ep="+ mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude+","+ mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude+"&by=CAR";
+//        Intent it = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+//        startActivity(it);
+    }
+
+    @Override
+    public void onDraggablePOIItemMoved(MapView mapView, MapPOIItem mapPOIItem, MapPoint mapPoint) {
+
+    }
+}

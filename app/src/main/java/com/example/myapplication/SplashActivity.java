@@ -10,7 +10,7 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         try{
-            Thread.sleep(2000); // 대기 초
+            Thread.sleep(100); // 대기 초
         }catch (InterruptedException e){
             e.printStackTrace();
         }
