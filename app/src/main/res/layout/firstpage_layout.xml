@@ -20,6 +20,7 @@ tools:context=".MainActivity">
         android:layout_height="130dp"
         android:background="@drawable/buttonshape"
         android:drawableTop="@drawable/little_whitexml"
+        android:hapticFeedbackEnabled="false"
         android:text="@string/Brand"
         android:textColor="@color/black"
         android:textSize="15sp" />

@@ -44,6 +44,8 @@ import net.daum.mf.map.api.MapView;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
@@ -641,7 +643,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     public void clickBtn(View view){    //긴급상황 액티비티로 전환
 
-        setFilter(new String[]{"DC콤보"});
+//        setFilter(new String[]{"DC콤보"});
 //        Log.d("zoomlevel = ", mapView.getZoomLevelFloat()+"");
         Intent intent = new Intent(this, Emergency.class);
         startActivity(intent);
@@ -808,7 +810,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             marker[i].setShowCalloutBalloonOnTouch(false);  //말풍선 안보이게 하기
             marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
             marker[i].setTag(i);
-            marker[i].setShowCalloutBalloonOnTouch(true);
             marker[i].setMapPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[temp].getLat(), search_result.getStations()[temp].getLongi()));
             marker[i].setMarkerType(MapPOIItem.MarkerType.YellowPin); // 기본으로 제공하는 BluePin 마커 모양.
             marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.BluePin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
@@ -882,25 +883,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         it.putExtra("kakao", url);
         startActivity(it);
 
-
-//        String temp = "there is ";
-//        for(int i = 0;i < search_result.getStation_size(); i++){
-//            if(mapPOIItem.getItemName().equals(search_result.getStations()[i].getCsNm())){
-//                temp += search_result.getStations()[i].machines_size + " stations possible is ";
-//                int able = 0;
-//                for(int j = 0; j < search_result.getStations()[i].machines_size; j++){
-//                    if(search_result.getStations()[i].machines[j].getCpStat() == 1){
-//                        able++;
-//                    }
-//                }
-//                temp += able + "";
-//                break;
-//            }
-//        }
-//
-//        Toast myToast = Toast.makeText(getApplicationContext(), temp, Toast.LENGTH_SHORT);
-//        myToast.show();
-//        setFilter(new String[]{"DC콤보"});
     }
 
     @Override
@@ -910,39 +892,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     @Override
     public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem, MapPOIItem.CalloutBalloonButtonType calloutBalloonButtonType) {
-//        View dialogView = getLayoutInflater().inflate(R.layout.custom_noti, null);
-//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//        builder.setView(dialogView);
-//        builder.setPositiveButton( "길찾기", new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                Toast myToast = Toast.makeText(getApplicationContext(), "check", Toast.LENGTH_SHORT);
-//                myToast.show();
-//                String url = "kakaomap://route?sp="+ gpsTracker.getLatitude() +","+gpsTracker.getLongitude();
-//                url += "&ep="+ mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude+","+ mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude+"&by=CAR";
-//                Intent it = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-//                startActivity(it);
-//
-//            }
-//        });
-//        builder.setNeutralButton( "주변 정보", new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                Toast myToast = Toast.makeText(getApplicationContext(), "check", Toast.LENGTH_SHORT);
-//                myToast.show();
-//            }
-//        });
-//
-//        AlertDialog alertDialog = builder.create();
-//        alertDialog.show();
 
-//        setFilter(new String[]{"DC콤보"});
-
-
-//        String url = "kakaomap://route?sp="+ gpsTracker.getLatitude() +","+gpsTracker.getLongitude();
-//        url += "&ep="+ mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude+","+ mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude+"&by=CAR";
-//        Intent it = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-//        startActivity(it);
     }
 
     @Override
