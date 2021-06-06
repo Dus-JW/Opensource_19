@@ -17,19 +17,15 @@ public class MyCarInfoActivity extends AppCompatActivity{
 
     String[] plugs;
     MyCarInfo carInfo = MyCarInfo.getInstance();
-    TextView CarName = findViewById(R.id.MyCarNameInput);
-    TextView CarCompany = findViewById(R.id.MyCarCompanyInput);
-    TextView CarRange = findViewById(R.id.MyCarRangeInput);
-    Spinner plugSpinner = findViewById(R.id.MyCarPlugInput);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
 
-        refreshCarInfoSetting();
-
         //내 차 이름
+        TextView CarName = findViewById(R.id.MyCarNameInput);
+        CarName.setText(carInfo.name);
         CarName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -49,6 +45,8 @@ public class MyCarInfoActivity extends AppCompatActivity{
         });
 
         //내 차량 제조사
+        TextView CarCompany = findViewById(R.id.MyCarCompanyInput);
+        CarCompany.setText(carInfo.Company);
         CarCompany.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -68,6 +66,8 @@ public class MyCarInfoActivity extends AppCompatActivity{
         });
 
         //내 차량 주행 가능 거리
+        TextView CarRange = findViewById(R.id.MyCarRangeInput);
+        CarRange.setText(Integer.toString(carInfo.range));
         CarRange.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -79,18 +79,21 @@ public class MyCarInfoActivity extends AppCompatActivity{
             }
             @Override
             public void afterTextChanged(Editable s) {
-                if(s.toString() != "0")
+                if(s.toString().length() >= 1)
                 {
                     carInfo.range = Integer.parseInt(s.toString());
                 }
             }
         });
 
+
         //플러그 스피너 설정
         plugs = getResources().getStringArray(R.array.Charge_Plug);
+        Spinner plugSpinner = findViewById(R.id.MyCarPlugInput);
         ArrayAdapter<String> plugAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_dropdown_item,plugs);
         plugAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         plugSpinner.setAdapter(plugAdapter);
+        plugSpinner.setSelection(carInfo.cpTp);
         plugSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -109,14 +112,16 @@ public class MyCarInfoActivity extends AppCompatActivity{
     @Override
     protected void onRestart() {
         super.onRestart();
-        refreshCarInfoSetting();
-    }
-
-    protected void refreshCarInfoSetting()
-    {
-        CarName.setText(carInfo.name);
-        CarCompany.setText(carInfo.Company);
-        CarRange.setText(carInfo.range);
+        TextView CarName = findViewById(R.id.MyCarNameInput);
+        if(carInfo.name != null)
+            CarName.setText(carInfo.name);
+        TextView CarCompany = findViewById(R.id.MyCarCompanyInput);
+        if(carInfo.Company != null)
+            CarCompany.setText(carInfo.Company);
+        TextView CarRange = findViewById(R.id.MyCarRangeInput);
+        CarRange.setText(Integer.toString(carInfo.range));
+        Spinner plugSpinner = findViewById(R.id.MyCarPlugInput);
         plugSpinner.setSelection(carInfo.cpTp);
+
     }
 }
