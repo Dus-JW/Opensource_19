@@ -777,7 +777,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             }
         }
 
-//        mapView.removeAllPOIItems();
+        mapView.removeAllPOIItems();
         marker = new MapPOIItem[clean_station_list.size()];
         for(int i = 0; i <clean_station_list.size(); i++){
             int temp = clean_station_list.get(i);
@@ -850,6 +850,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             }
         }
 
+        if(line.equals("\n")){
+            line = "\n현재 이용 가능한 충전기 없음\n";
+        }
         Intent it = new Intent(MainActivity.this, CustomNotiActivity.class);
         it.putExtra("station_name", now.getCsNm());
         it.putExtra("charger_info", line);
