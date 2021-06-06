@@ -233,6 +233,11 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
+                if(s.equals("리셋")){
+                    resetFilter();
+                    return true;
+                }
+
                 Log.d("search = ", s);
                 try {
                     search(s);
@@ -788,6 +793,28 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
 
 //        mapView.addPOIItems(marker);
+
+    }
+
+    public void resetFilter(){
+        mapView.removeAllPOIItems();
+
+        marker = new MapPOIItem[search_result.getStation_size()];
+        for(int i = 0; i <search_result.getStation_size(); i++){
+            marker[i] = new MapPOIItem();
+            marker[i].setShowCalloutBalloonOnTouch(false);  //말풍선 안보이게 하기
+            marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
+            marker[i].setTag(i);
+            Log.d("station get", "" + search_result.getStations()[i].getLat());
+            Log.d("station get", "" + search_result.getStations()[i].getLongi());
+            marker[i].setMapPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[i].getLat(), search_result.getStations()[i].getLongi()));
+            marker[i].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
+            marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+//                    mapView.addPOIItem(marker[i]);
+        }
+
+        mapView.addPOIItems(marker);
+        Toast.makeText(this, "필터 리셋!", Toast.LENGTH_LONG).show();
 
     }
 
