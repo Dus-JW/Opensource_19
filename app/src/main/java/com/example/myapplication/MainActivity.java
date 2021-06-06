@@ -1,6 +1,5 @@
 package com.example.myapplication;
 
-import android.app.Activity;
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,12 +9,7 @@ import android.content.pm.Signature;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -25,29 +19,20 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
-import android.view.Window;
 
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 
 
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -65,7 +50,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -88,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     String current_address;
     MapPOIItem[] marker;
     private SearchView mSearchView;
+    MyCarInfo carInfo = MyCarInfo.getInstance();
+
     class CustomCalloutBalloonAdapter implements CalloutBalloonAdapter {
         private final View mCalloutBalloon;
 
@@ -221,6 +207,17 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     }
 
+//    @Override
+//    public void onStop(){
+//        super.onStop();
+//        setFilter(new String[]{forFilter(carInfo.cpTp)});
+//    }
+    @Override
+    public void onRestart(){
+        super.onRestart();
+        setFilter(new String[]{forFilter(carInfo.cpTp)});
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -290,6 +287,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
                 mapView.addPOIItems(marker);
 
+                setFilter(new String[]{forFilter(carInfo.cpTp)});
+
+                //키보드 내리기
                 InputMethodManager manager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
                 manager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
@@ -375,7 +375,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         //여기까지 주석
 
-
+        //정보 있으면 필터 키고 시작
+        if(carInfo.cpTp != 0) {
+            setFilter(new String[]{forFilter(carInfo.cpTp)});
+        }
 //        setFilter(new String[]{"BC타입(5핀)"});
     }
 
@@ -758,6 +761,11 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         return re;
     }
 
+    public String forFilter(int a){
+        String[] type = {"B타입(5핀)","C타입(5핀)", "BC타입(5핀)","BC타입(7핀)", "DC차데모","AC3상", "DC콤보","DC차데모+DC콤보", "DC차데모+AC3상","DC차데모+DC콤보+AC3상"};
+        return type[a - 1];
+    }
+
     public void setFilter(String[] selects){
         String[] type = {"B타입(5핀)","C타입(5핀)", "BC타입(5핀)","BC타입(7핀)", "DC차데모","AC3상", "DC콤보","DC차데모+DC콤보", "DC차데모+AC3상","DC차데모+DC콤보+AC3상"};
         int[] selects_int = new int[selects.length];
@@ -924,7 +932,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 //        AlertDialog alertDialog = builder.create();
 //        alertDialog.show();
 
-        setFilter(new String[]{"DC콤보"});
+//        setFilter(new String[]{"DC콤보"});
 
 
 //        String url = "kakaomap://route?sp="+ gpsTracker.getLatitude() +","+gpsTracker.getLongitude();
