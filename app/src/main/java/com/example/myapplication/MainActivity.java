@@ -777,6 +777,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         for(int i = 0; i <clean_station_list.size(); i++){
             int temp = clean_station_list.get(i);
             marker[i] = new MapPOIItem();
+            marker[i].setShowCalloutBalloonOnTouch(false);  //말풍선 안보이게 하기
             marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
             marker[i].setTag(i);
             marker[i].setShowCalloutBalloonOnTouch(true);
@@ -816,7 +817,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             }
         }
         for(int i = 0;i < 10; i++){
-            temp[i] = "type " + type[i] + " total "+total[i]+" able "+able[i]+"\n";
+            temp[i] = "충전기 종류 : " + type[i] + "\n   총 "+total[i]+"개 중 "+able[i]+"개 이용 가능\n";
             if(able[i] != 0){
                 line += temp[i];
             }
