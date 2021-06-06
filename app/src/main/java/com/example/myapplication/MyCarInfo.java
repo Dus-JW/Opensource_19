@@ -22,7 +22,13 @@ public class MyCarInfo {        //싱글톤으로 객체 1개 유지
         9 : DC차데모+AC3상
         10 : DC차데모+DC콤보+AC3상*/
 
-    private MyCarInfo() {}
+    private MyCarInfo()
+    {
+        name = null;
+        Company = null;
+        range = 0;
+        cpTp = 0;
+    }
 
     static MyCarInfo getInstance()
     {
