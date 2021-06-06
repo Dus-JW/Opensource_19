@@ -34,6 +34,7 @@
             android:layout_height="wrap_content"
             android:text="내 차 이름"
             android:fontFamily="@font/nanumbarunpenb"
+            android:paddingLeft="15dp"
             android:textSize="32dp" />
 
         <EditText
@@ -44,6 +45,7 @@
             android:inputType="textPersonName"
             android:text="애마"
             android:fontFamily="@font/nanumbarunpenr"
+            android:paddingLeft="15dp"
             android:textSize="32dp" />
 
         <TextView
@@ -52,6 +54,7 @@
             android:layout_height="wrap_content"
             android:text="차량 제조사"
             android:fontFamily="@font/nanumbarunpenb"
+            android:paddingLeft="15dp"
             android:textSize="32dp" />
 
         <EditText
@@ -62,6 +65,7 @@
             android:inputType="textPersonName"
             android:text="기타"
             android:fontFamily="@font/nanumbarunpenr"
+            android:paddingLeft="15dp"
             android:textSize="32dp" />
 
         <TextView
@@ -70,6 +74,7 @@
             android:layout_height="wrap_content"
             android:text="주행가능거리(km)"
             android:fontFamily="@font/nanumbarunpenb"
+            android:paddingLeft="15dp"
             android:textSize="32dp" />
 
         <EditText
@@ -80,6 +85,7 @@
             android:inputType="number"
             android:text="0"
             android:fontFamily="@font/nanumbarunpenr"
+            android:paddingLeft="15dp"
             android:textSize="32dp" />
 
         <TextView
@@ -88,6 +94,7 @@
             android:layout_height="wrap_content"
             android:text="충전 플러그"
             android:fontFamily="@font/nanumbarunpenb"
+            android:paddingLeft="15dp"
             android:textSize="32dp" />
 
         <Spinner
