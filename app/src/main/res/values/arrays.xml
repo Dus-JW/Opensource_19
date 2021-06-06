@@ -1,0 +1,25 @@
+<resources>
+    <!-- Reply Preference -->
+    <string-array name="reply_entries">
+        <item>Reply</item>
+        <item>Reply to all</item>
+    </string-array>
+
+    <string-array name="Charge_Plug">
+        <item>"B타입(5핀)"</item>
+        <item>"C타입(5핀)"</item>
+        <item>"BC타입(5핀)"</item>
+        <item>"BC타입(7핀)"</item>
+        <item>"DC차데모"</item>
+        <item>"AC3상"</item>
+        <item>"DC콤보"</item>
+        <item>"DC차데모+DC콤보"</item>
+        <item>"DC차데모+AC3상"</item>
+        <item>"DC차데모+DC콤보+AC3상"</item>
+    </string-array>
+
+    <string-array name="reply_values">
+        <item>reply</item>
+        <item>reply_all</item>
+    </string-array>
+</resources>
