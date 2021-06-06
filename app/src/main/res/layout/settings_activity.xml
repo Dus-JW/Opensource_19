@@ -23,7 +23,7 @@
                 android:gravity="center_horizontal"
                 android:text="@string/My_Car_Info"
                 android:textColor="@color/white"
-                android:textSize="55" />
+                android:textSize="55dp" />
 
         <TextView
             android:id="@+id/MyCarName"
@@ -94,18 +94,11 @@
             android:paddingLeft="15dp"
             android:textSize="32dp" />
 
-            <TextView
-                android:id="@+id/MyCarPlug"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/nanumbarunpenb"
-                android:text="충전 플러그"
-                android:textSize="32dp" />
+        <Spinner
+            android:id="@+id/MyCarPlugInput"
+            android:layout_width="match_parent"
+            android:layout_height="44dp" />
 
-            <Spinner
-                android:id="@+id/MyCarPlugInput"
-                android:layout_width="match_parent"
-                android:layout_height="44dp" />
         </LinearLayout>
     </ScrollView>
 
