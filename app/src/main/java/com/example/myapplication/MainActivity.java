@@ -207,6 +207,17 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     }
 
+//    @Override
+//    public void onStop(){
+//        super.onStop();
+//        setFilter(new String[]{forFilter(carInfo.cpTp)});
+//    }
+    @Override
+    public void onRestart(){
+        super.onRestart();
+        setFilter(new String[]{forFilter(carInfo.cpTp)});
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
