@@ -6,6 +6,7 @@
     </string-array>
 
     <string-array name="Charge_Plug">
+        <item>"선택:"</item>
         <item>"B타입(5핀)"</item>
         <item>"C타입(5핀)"</item>
         <item>"BC타입(5핀)"</item>
