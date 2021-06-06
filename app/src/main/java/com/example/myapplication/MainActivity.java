@@ -47,6 +47,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -225,6 +226,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         super.onCreate(savedInstanceState);
         getHashKey();
         setContentView(R.layout.activity_main);
+
+        search_result = null;
         mSearchView = findViewById(R.id.searchView);
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -269,6 +272,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 marker = new MapPOIItem[search_result.getStation_size()];
                 for(int i = 0; i <search_result.getStation_size(); i++){
                     marker[i] = new MapPOIItem();
+                    marker[i].setShowCalloutBalloonOnTouch(false);  //말풍선 안보이게 하기
                     marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
                     marker[i].setTag(i);
                     Log.d("station get", "" + search_result.getStations()[i].getLat());
@@ -331,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
 
         mapView = new MapView(this);
-        mapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter());    //커스텀 말풍선 세팅
+//        mapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter());    //커스텀 말풍선 세팅
         mapView.setPOIItemEventListener(this);  //마커 클릭했을 때 행동 가능하게 리스너 동록
         ViewGroup mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
         mapViewContainer.addView(mapView);
@@ -340,6 +344,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         marker = new MapPOIItem[search_result.getStation_size()];
         for(int i = 0; i <search_result.getStation_size(); i++){
             marker[i] = new MapPOIItem();
+            marker[i].setShowCalloutBalloonOnTouch(false);  //말풍선 안보이게 하기
             marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
             marker[i].setTag(i);
             Log.d("station get", "" + search_result.getStations()[i].getLat());
@@ -613,6 +618,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     public void clickBtn(View view){    //긴급상황 액티비티로 전환
 
+        setFilter(new String[]{"DC콤보"});
 //        Log.d("zoomlevel = ", mapView.getZoomLevelFloat()+"");
         Intent intent = new Intent(this, Emergency.class);
         startActivity(intent);
@@ -625,17 +631,18 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     * 아니면
     * */
     void search(String input) throws SAXException, ParserConfigurationException, ParseException, IOException, ExecutionException, InterruptedException {
-        search_result = new SearchByAddress();
+        SearchByAddress result = new SearchByAddress();
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
         Log.d("api_before", "this-"+input);
 
+        SearchByAddress finalResult = result;
         Future<SearchByAddress> future = executor.submit(() -> {
-            SearchByAddress temp = this.search_result;
+            SearchByAddress temp = finalResult;
             Log.d("api", "this-"+input);
             try {
-                this.search_result.XmlToStationList(this.search_result.APISearch(input));
+                finalResult.XmlToStationList(finalResult.APISearch(input));
             } catch (ParserConfigurationException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -647,14 +654,32 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             }
             return temp;
         });
-        this.search_result = future.get();
-        if(search_result.getStation_size() == 0){
+        result = future.get();
+        if(result.getStation_size() == 0){
             Toast.makeText(MainActivity.this, "API에 검색 결과가 없습니다!", Toast.LENGTH_LONG).show();
             return;
         }
+        if(search_result == null){
+            search_result = result;
+        }
+        else{
+            int new_size = search_result.getStation_size() + result.getStation_size();
+            ChargeStationInfo[] new_ch = new ChargeStationInfo[new_size];
+            for(int i = 0; i < new_size; i++){
+                if(i < search_result.getStation_size()){
+                    new_ch[i] = search_result.getStations()[i];
+                }
+                else{
+                    new_ch[i] = result.getStations()[i - search_result.getStation_size()];
+                }
+            }
+            search_result.setStation_size(new_size);
+            search_result.setStations(new_ch);
+
+        }
         Log.d("api_after", "this-"+input);
-        Log.d("api", "lat = " + this.search_result.getStations()[0].getLat());
-        Log.d("api", "longi = " + this.search_result.getStations()[0].getLongi());
+        Log.d("api", "lat = " + result.getStations()[0].getLat());
+        Log.d("api", "longi = " + result.getStations()[0].getLongi());
     }
 
     public String getCurrentAddress( double latitude, double longitude) {
@@ -767,27 +792,61 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     @Override
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem) { //마커를 터치하면 충전기 등 정보가 나오게 하자
-        int station_index = mapPOIItem.getTag();
-        ChargeStationInfo[] touchInfo = search_result.getSameStation(mapPOIItem.getItemName());
-        String temp = "there is ";
-        for(int i = 0;i < search_result.getStation_size(); i++){
+        String url = "kakaomap://route?sp="+ gpsTracker.getLatitude() +","+gpsTracker.getLongitude();
+        url += "&ep="+ mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude+","+ mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude+"&by=CAR";
+
+        ChargeStationInfo now = new ChargeStationInfo();
+        for(int i = 0; i < search_result.getStation_size(); i++){
             if(mapPOIItem.getItemName().equals(search_result.getStations()[i].getCsNm())){
-                temp += search_result.getStations()[i].machines_size + " stations possible is ";
-                int able = 0;
-                for(int j = 0; j < search_result.getStations()[i].machines_size; j++){
-                    if(search_result.getStations()[i].machines[j].getCpStat() == 1){
-                        able++;
-                    }
-                }
-                temp += able + "";
+                now = search_result.getStations()[i];
                 break;
             }
         }
 
+        String[] temp = new String[10];
+        int[] total = new int[10];
+        int[] able = new int[10];
+        String[] type = {"B타입(5핀)","C타입(5핀)", "BC타입(5핀)","BC타입(7핀)", "DC차데모","AC3상", "DC콤보","DC차데모+DC콤보", "DC차데모+AC3상","DC차데모+DC콤보+AC3상"};
+        String line = "\n";
 
-        Toast myToast = Toast.makeText(getApplicationContext(), temp, Toast.LENGTH_SHORT);
-        myToast.show();
-        setFilter(new String[]{"DC콤보"});
+        for(int i = 0;i < now.getMachines_size(); i++){
+            total[now.getMachines()[i].getCpTp()-1]++;
+            if(now.getMachines()[i].getCpStat() == 1){
+                able[now.getMachines()[i].getCpTp()-1]++;
+            }
+        }
+        for(int i = 0;i < 10; i++){
+            temp[i] = "type " + type[i] + " total "+total[i]+" able "+able[i]+"\n";
+            if(able[i] != 0){
+                line += temp[i];
+            }
+        }
+
+        Intent it = new Intent(MainActivity.this, CustomNotiActivity.class);
+        it.putExtra("station_name", now.getCsNm());
+        it.putExtra("charger_info", line);
+        it.putExtra("kakao", url);
+        startActivity(it);
+
+
+//        String temp = "there is ";
+//        for(int i = 0;i < search_result.getStation_size(); i++){
+//            if(mapPOIItem.getItemName().equals(search_result.getStations()[i].getCsNm())){
+//                temp += search_result.getStations()[i].machines_size + " stations possible is ";
+//                int able = 0;
+//                for(int j = 0; j < search_result.getStations()[i].machines_size; j++){
+//                    if(search_result.getStations()[i].machines[j].getCpStat() == 1){
+//                        able++;
+//                    }
+//                }
+//                temp += able + "";
+//                break;
+//            }
+//        }
+//
+//        Toast myToast = Toast.makeText(getApplicationContext(), temp, Toast.LENGTH_SHORT);
+//        myToast.show();
+//        setFilter(new String[]{"DC콤보"});
     }
 
     @Override
@@ -797,10 +856,39 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     @Override
     public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem, MapPOIItem.CalloutBalloonButtonType calloutBalloonButtonType) {
-        String url = "kakaomap://route?sp="+ gpsTracker.getLatitude() +","+gpsTracker.getLongitude();
-        url += "&ep="+ mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude+","+ mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude+"&by=CAR";
-        Intent it = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        startActivity(it);
+//        View dialogView = getLayoutInflater().inflate(R.layout.custom_noti, null);
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        builder.setView(dialogView);
+//        builder.setPositiveButton( "길찾기", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                Toast myToast = Toast.makeText(getApplicationContext(), "check", Toast.LENGTH_SHORT);
+//                myToast.show();
+//                String url = "kakaomap://route?sp="+ gpsTracker.getLatitude() +","+gpsTracker.getLongitude();
+//                url += "&ep="+ mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude+","+ mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude+"&by=CAR";
+//                Intent it = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+//                startActivity(it);
+//
+//            }
+//        });
+//        builder.setNeutralButton( "주변 정보", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                Toast myToast = Toast.makeText(getApplicationContext(), "check", Toast.LENGTH_SHORT);
+//                myToast.show();
+//            }
+//        });
+//
+//        AlertDialog alertDialog = builder.create();
+//        alertDialog.show();
+
+        setFilter(new String[]{"DC콤보"});
+
+
+//        String url = "kakaomap://route?sp="+ gpsTracker.getLatitude() +","+gpsTracker.getLongitude();
+//        url += "&ep="+ mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude+","+ mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude+"&by=CAR";
+//        Intent it = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+//        startActivity(it);
     }
 
     @Override

@@ -145,6 +145,13 @@ public class SearchByAddress {
     public int getTemp_size() {
         return temp_size;
     }
+    public void setStations(ChargeStationInfo[] stations) {
+        Stations = stations;
+    }
+    public void setStation_size(int station_size) {
+        Station_size = station_size;
+    }
+
     public ChargeStationInfo[] getSameStation(String name){
         int i = 0;
         ArrayList same = new ArrayList();
@@ -162,39 +169,4 @@ public class SearchByAddress {
 
         return temp;
     }
-
-//    @Override
-//    protected void onPreExecute(){
-//
-//    }
-//    @Override
-//    protected NodeList doInBackground(String... strings) {
-//        try {
-//            this.xmlString = APISearch(strings[0]);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        try {
-//            XmlToStationList(this.xmlString);
-//        } catch (ParserConfigurationException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (SAXException e) {
-//            e.printStackTrace();
-//        } catch (ParseException e) {
-//            e.printStackTrace();
-//        }
-//
-//        return null;
-//    }
-//    @Override
-//    protected void onProgressUpdate(Integer... values) {
-//
-//    }
-//    @Override
-//    protected void onPostExecute(NodeList... nodeLists) {
-//
-//    }
 }
