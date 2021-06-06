@@ -26,39 +26,12 @@ tools:context=".MainActivity">
 <AbsoluteLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-<Button
-    android:id="@+id/F_button2"
-    android:layout_width="90dp"
-    android:layout_height="40dp"
-    android:layout_y="150dp"
-    android:background="@drawable/buttonshape2"
-    android:shadowColor="@color/gray"
-    android:shadowDx="1"
-    android:shadowDy="1"
-    android:shadowRadius="1"
-    android:fontFamily="@font/nanumbarunpenr"
-    android:text="@string/Find_mapping"
-    android:textColor="@color/black"
-    android:textSize="12sp" />
-<Button
-    android:id="@+id/F_button3"
-    android:layout_width="90dp"
-    android:layout_height="40dp"
-    android:layout_y="230dp"
-    android:background="@drawable/buttonshape3"
-    android:shadowColor="@color/gray"
-    android:shadowDx="1"
-    android:shadowDy="1"
-    android:shadowRadius="1"
-    android:fontFamily="@font/nanumbarunpenr"
-    android:text="@string/Arrange_Info"
-    android:textColor="@color/black"
-    android:textSize="12sp" />
+
 <Button
     android:id="@+id/F_button4"
     android:layout_width="90dp"
     android:layout_height="40dp"
-    android:layout_y="310dp"
+    android:layout_y="150dp"
     android:background="@drawable/buttonshape4"
     android:shadowColor="@color/gray"
     android:shadowDx="1"
