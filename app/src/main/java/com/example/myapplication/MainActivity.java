@@ -309,6 +309,17 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             showDialogForLocationServiceSetting();
         }
 
+        //내차 정보 버튼 눌렀을 때 액티비티 이동
+        Button MyCarInfoButton = findViewById(R.id.F_button4);
+        MyCarInfoButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, MyCarInfoActivity.class));
+            }
+        });
+        
+        
         /***************************************************/
 
         //AVD에서 돌릴땐 여기서 부터

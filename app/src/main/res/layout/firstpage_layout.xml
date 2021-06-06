@@ -66,8 +66,10 @@ tools:context=".MainActivity">
     android:shadowRadius="1"
     android:fontFamily="@font/nanumbarunpenr"
     android:text="@string/My_Car_Info"
+
     android:textColor="@color/black"
     android:textSize="12sp" />
+
 
 </AbsoluteLayout>
 
