@@ -215,6 +215,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     @Override
     public void onRestart(){
         super.onRestart();
+        if(carInfo.cpTp == 0){
+            resetFilter();
+            return;
+        }
         setFilter(new String[]{forFilter(carInfo.cpTp)});
     }
 
