@@ -45,7 +45,7 @@ public class MyCarInfoActivity extends AppCompatActivity{
 
         //내 차량 제조사
         TextView CarCompany = findViewById(R.id.MyCarCompanyInput);
-        CarName.addTextChangedListener(new TextWatcher() {
+        CarCompany.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -65,7 +65,7 @@ public class MyCarInfoActivity extends AppCompatActivity{
 
         //내 차량 주행 가능 거리
         TextView CarRange = findViewById(R.id.MyCarRangeInput);
-        CarName.addTextChangedListener(new TextWatcher() {
+        CarRange.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
