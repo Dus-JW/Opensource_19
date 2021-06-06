@@ -293,7 +293,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
                 mapView.addPOIItems(marker);
 
-                setFilter(new String[]{forFilter(carInfo.cpTp)});
+                if(carInfo.cpTp != 0){
+                    setFilter(new String[]{forFilter(carInfo.cpTp)});
+                }
 
                 //키보드 내리기
                 InputMethodManager manager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
@@ -769,6 +771,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     public String forFilter(int a){
         String[] type = {"B타입(5핀)","C타입(5핀)", "BC타입(5핀)","BC타입(7핀)", "DC차데모","AC3상", "DC콤보","DC차데모+DC콤보", "DC차데모+AC3상","DC차데모+DC콤보+AC3상"};
+        if(a == 0){
+            return "";
+        }
         return type[a - 1];
     }
 
