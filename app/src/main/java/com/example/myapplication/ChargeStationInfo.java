@@ -18,6 +18,7 @@ public class ChargeStationInfo {
         this.machines_size = 0;
     }
 
+    //충전소에 해당하는 충전기가 있으면 true
     public  boolean chargeType(int want_check){
         for(int i = 0; i < machines_size; i++){
             if(want_check == machines[i].getCpTp()){

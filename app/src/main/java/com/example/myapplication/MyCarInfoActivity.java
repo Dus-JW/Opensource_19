@@ -110,7 +110,7 @@ public class MyCarInfoActivity extends AppCompatActivity{
     }
 
     @Override
-    protected void onRestart() {
+    protected void onRestart() {    //다른 액티비티 갔다와도 값 유지
         super.onRestart();
         TextView CarName = findViewById(R.id.MyCarNameInput);
         if(carInfo.name != null)

@@ -41,7 +41,7 @@ public class SearchByAddress {
         this.xmlString = new StringBuilder();
     }
 
-    public static StringBuilder APISearch(String SearchArea) throws IOException {
+    public static StringBuilder APISearch(String SearchArea) throws IOException {       //api에 주소 입력 후 결과인 xml을 stringbuilder로 받음
         StringBuilder urlBuilder = new StringBuilder("http://openapi.kepco.co.kr/service/EvInfoServiceV2/getEvSearchList"); /*URL*/
         urlBuilder.append("?" + URLEncoder.encode("ServiceKey","UTF-8") + "=mc8t%2FIKId9o9HjveUHJrRF%2BAU86YpNgUZq0sQ48LdzYalmgyTOvovrAgdCinV%2Ba32d%2BgzEfwm6alnB8exvhnjw%3D%3D"); /*Service Key*/
         //urlBuilder.append("&" + URLEncoder.encode("ServiceKey","UTF-8") + "=" + URLEncoder.encode("mc8t%2FIKId9o9HjveUHJrRF%2BAU86YpNgUZq0sQ48LdzYalmgyTOvovrAgdCinV%2Ba32d%2BgzEfwm6alnB8exvhnjw%3D%3D", "UTF-8")); /*공공데이터포털에서 받은 인증키*/
@@ -74,6 +74,7 @@ public class SearchByAddress {
         return sb;
     }
 
+    //xml에서 원하는 정보를 추출해 Stations과 station_size로 저장
     public void XmlToStationList(StringBuilder in) throws ParserConfigurationException, IOException, SAXException, ParseException {
         InputSource is = new InputSource(new StringReader(in.toString()));
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

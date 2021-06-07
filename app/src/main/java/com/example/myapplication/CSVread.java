@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CSVread {
+public class CSVread {      //주변정보용 csv 인코딩 실패
     InputStream inputStream;
 
     public CSVread(InputStream inputStream){

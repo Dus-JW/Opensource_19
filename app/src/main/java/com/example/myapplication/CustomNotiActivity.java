@@ -22,7 +22,7 @@ public class CustomNotiActivity extends Activity {
         setContentView(R.layout.custom_noti);
 
 
-        Intent intent = getIntent();
+        Intent intent = getIntent();    //메인에서 넘겨준 값 불러오기
 
         String title_string = intent.getExtras().getString("station_name");
         String charges = intent.getExtras().getString("charger_info");
@@ -40,7 +40,7 @@ public class CustomNotiActivity extends Activity {
             @Override
             public void onClick(View view) {
 
-                Intent it = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                Intent it = new Intent(Intent.ACTION_VIEW, Uri.parse(url)); //길찾기 클릭시 카카오맵 시작
                 startActivity(it);
 
                 finish();

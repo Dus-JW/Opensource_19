@@ -5,7 +5,7 @@ import android.os.Message;
 
 import androidx.annotation.NonNull;
 
-public abstract class FakeAsyncTask<T1,T2> implements Runnable {
+public abstract class FakeAsyncTask<T1,T2> implements Runnable {    //백그라운드 네트워크를 위한 클래스 - 현재 이용 안함
     // Argument
     T1 mArgument;
 

@@ -11,7 +11,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.myapplication.databinding.FragmentSecondBinding;
 
-public class SecondFragment extends Fragment {
+public class SecondFragment extends Fragment {  //테스트용 - 미사용
 
     private FragmentSecondBinding binding;
 

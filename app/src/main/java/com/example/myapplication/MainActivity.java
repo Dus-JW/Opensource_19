@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private SearchView mSearchView;
     MyCarInfo carInfo = MyCarInfo.getInstance();
 
-    class CustomCalloutBalloonAdapter implements CalloutBalloonAdapter {
+    class CustomCalloutBalloonAdapter implements CalloutBalloonAdapter {    //카카오맵 api의 커스텀 말풍선 - 현재 사용 안함
         private final View mCalloutBalloon;
 
         public CustomCalloutBalloonAdapter() {
@@ -209,15 +209,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     }
 
-//    @Override
-//    public void onStop(){
-//        super.onStop();
-//        setFilter(new String[]{forFilter(carInfo.cpTp)});
-//    }
     @Override
-    public void onRestart(){
+    public void onRestart(){    //'내차정보'에서 돌아올 때 필터 업데이트
         super.onRestart();
-        if(carInfo.cpTp == 0){
+        if(carInfo.cpTp == 0){  //필터 해제 상태면 필터 초기화
             resetFilter();
             return;
         }
@@ -235,15 +230,15 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onQueryTextSubmit(String s) {
-                if(s.equals("리셋")){
-                    resetFilter();
-                    return true;
-                }
+            public boolean onQueryTextSubmit(String s) {    //검색창 입력받기
+//                if(s.equals("리셋")){   //필터 리셋 테스트
+//                    resetFilter();
+//                    return true;
+//                }
 
                 Log.d("search = ", s);
                 try {
-                    search(s);
+                    search(s);  //검색 문자로 api 호출
                 } catch (SAXException e) {
                     e.printStackTrace();
                     return false;
@@ -297,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     setFilter(new String[]{forFilter(carInfo.cpTp)});
                 }
 
-                //키보드 내리기
+                //검색 버튼을 누른 후 자동으로 키보드 내리기
                 InputMethodManager manager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
                 manager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
@@ -311,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             }
         });
 
-        if (checkLocationServicesStatus()) {
+        if (checkLocationServicesStatus()) {    //권한 체크
             checkRunTimePermission();
         } else {
             showDialogForLocationServiceSetting();
@@ -328,9 +323,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         });
         
         
-        /***************************************************/
-
+        /****************************************************************/
+        //AVD에서는 카카오맵 API가 실행 안됨!!!
         //AVD에서 돌릴땐 여기서 부터
+
         gpsTracker = new GpsTracker(MainActivity.this);
         double lati = gpsTracker.getLatitude();
         double longi = gpsTracker.getLongitude();
@@ -382,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mapView.addPOIItems(marker);
 
         //여기까지 주석
-
+        /************************************************************/
         //정보 있으면 필터 키고 시작
         if(carInfo.cpTp != 0) {
             setFilter(new String[]{forFilter(carInfo.cpTp)});
@@ -390,7 +386,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 //        setFilter(new String[]{"BC타입(5핀)"});
     }
 
-    private void getHashKey(){
+    private void getHashKey(){  //안드로이드 디버그 해쉬키 로그로 출력
         PackageInfo packageInfo = null;
         try {
             packageInfo = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_SIGNATURES);
@@ -417,40 +413,21 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                                            @NonNull int[] grandResults) {
 
         if (permsRequestCode == PERMISSIONS_REQUEST_CODE && grandResults.length == REQUIRED_PERMISSIONS.length) {
-
-            // 요청 코드가 PERMISSIONS_REQUEST_CODE 이고, 요청한 퍼미션 개수만큼 수신되었다면
-
             boolean check_result = true;
-
-
-            // 모든 퍼미션을 허용했는지 체크합니다.
-
             for (int result : grandResults) {
                 if (result != PackageManager.PERMISSION_GRANTED) {
                     check_result = false;
                     break;
                 }
             }
-
-
             if (check_result) {
-
-                //위치 값을 가져올 수 있음
-                ;
             } else {
-                // 거부한 퍼미션이 있다면 앱을 사용할 수 없는 이유를 설명해주고 앱을 종료합니다.2 가지 경우가 있습니다.
-
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])
                         || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[1])) {
-
                     Toast.makeText(MainActivity.this, "퍼미션이 거부되었습니다. 앱을 다시 실행하여 퍼미션을 허용해주세요.", Toast.LENGTH_LONG).show();
                     finish();
-
-
                 } else {
-
                     Toast.makeText(MainActivity.this, "퍼미션이 거부되었습니다. 설정(앱 정보)에서 퍼미션을 허용해야 합니다. ", Toast.LENGTH_LONG).show();
-
                 }
             }
 
@@ -458,40 +435,20 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     }
 
     void checkRunTimePermission() {
-
-        //런타임 퍼미션 처리
-        // 1. 위치 퍼미션을 가지고 있는지 체크합니다.
         int hasFineLocationPermission = ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.ACCESS_FINE_LOCATION);
         int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.ACCESS_COARSE_LOCATION);
-
-
         if (hasFineLocationPermission == PackageManager.PERMISSION_GRANTED &&
                 hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED) {
-
-            // 2. 이미 퍼미션을 가지고 있다면
-            // ( 안드로이드 6.0 이하 버전은 런타임 퍼미션이 필요없기 때문에 이미 허용된 걸로 인식합니다.)
-
-
-            // 3.  위치 값을 가져올 수 있음
-
-
-        } else {  //2. 퍼미션 요청을 허용한 적이 없다면 퍼미션 요청이 필요합니다. 2가지 경우(3-1, 4-1)가 있습니다.
-
-            // 3-1. 사용자가 퍼미션 거부를 한 적이 있는 경우에는
-            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, REQUIRED_PERMISSIONS[0])) {
-
-                // 3-2. 요청을 진행하기 전에 사용자가에게 퍼미션이 필요한 이유를 설명해줄 필요가 있습니다.
+        }
+        else {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, REQUIRED_PERMISSIONS[0])) {
                 Toast.makeText(MainActivity.this, "이 앱을 실행하려면 위치 접근 권한이 필요합니다.", Toast.LENGTH_LONG).show();
-                // 3-3. 사용자게에 퍼미션 요청을 합니다. 요청 결과는 onRequestPermissionResult에서 수신됩니다.
                 ActivityCompat.requestPermissions(MainActivity.this, REQUIRED_PERMISSIONS,
                         PERMISSIONS_REQUEST_CODE);
-
-
-            } else {
-                // 4-1. 사용자가 퍼미션 거부를 한 적이 없는 경우에는 퍼미션 요청을 바로 합니다.
-                // 요청 결과는 onRequestPermissionResult에서 수신됩니다.
+            }
+                else {
                 ActivityCompat.requestPermissions(MainActivity.this, REQUIRED_PERMISSIONS,
                         PERMISSIONS_REQUEST_CODE);
             }
@@ -499,7 +456,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     }
 
     private void showDialogForLocationServiceSetting() {
-
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle("위치 서비스 비활성화");
         builder.setMessage("앱을 사용하기 위해서는 위치 서비스가 필요합니다.\n"
@@ -533,21 +489,16 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         switch (requestCode) {
-
             case GPS_ENABLE_REQUEST_CODE:
-
                 //사용자가 GPS 활성 시켰는지 검사
                 if (checkLocationServicesStatus()) {
                     if (checkLocationServicesStatus()) {
-
                         Log.d("@@@", "onActivityResult : GPS 활성화 되있음");
                         checkRunTimePermission();
                         return;
                     }
                 }
-
                 break;
         }
     }
@@ -625,7 +576,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         return true;
     }
 
-    @Override   //툴바 클릭용 https://www.hanumoka.net/2017/10/28/android-20171028-android-toolbar/ 참고 공사중
+    @Override   //툴바 클릭용 https://www.hanumoka.net/2017/10/28/android-20171028-android-toolbar/ 참고 - 현재 이용 안함
     public boolean onOptionsItemSelected(MenuItem item) {
         //return super.onOptionsItemSelected(item);
         switch (item.getItemId()) {
@@ -644,15 +595,15 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     }
 
     public void clickBtn(View view){    //긴급상황 액티비티로 전환
-
 //        setFilter(new String[]{"DC콤보"});
 //        Log.d("zoomlevel = ", mapView.getZoomLevelFloat()+"");
         Intent intent = new Intent(this, Emergency.class);
         startActivity(intent);
     }
 
+
     /*
-    * search를 하면 search_result에 값이 갱신됨 (추가 아님!!!)
+    * search를 하면 search_result에 값이 갱신됨 (추가 아님!!!) - 현재 추가로 변경
     * 그것의 stations 배열의 값을 하나 고르고 거기서 get을 통해 필요한 정보를
     * 가져오면 됨 ex)  search_result.getStations()[3].getLongi()
     * 아니면
@@ -665,7 +616,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         Log.d("api_before", "this-"+input);
 
         SearchByAddress finalResult = result;
-        Future<SearchByAddress> future = executor.submit(() -> {
+        Future<SearchByAddress> future = executor.submit(() -> {    //api를 위해 백그라운드에서 통신 실행
             SearchByAddress temp = finalResult;
             Log.d("api", "this-"+input);
             try {
@@ -710,7 +661,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     }
 
     public String getCurrentAddress( double latitude, double longitude) {
-
         //지오코더... GPS를 주소로 변환
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
@@ -743,10 +693,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     }
 
     public double[] AddressTodouble( String s) {
-
         //지오코더... GPS를 주소로 변환
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-
         List<Address> addresses = null;
 
         try {
@@ -769,7 +717,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         return re;
     }
 
-    public String forFilter(int a){
+    public String forFilter(int a){ //충전기 타입이 정수일 때 문자열로 변환
         String[] type = {"B타입(5핀)","C타입(5핀)", "BC타입(5핀)","BC타입(7핀)", "DC차데모","AC3상", "DC콤보","DC차데모+DC콤보", "DC차데모+AC3상","DC차데모+DC콤보+AC3상"};
         if(a == 0){
             return "";
@@ -777,7 +725,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         return type[a - 1];
     }
 
-    public void setFilter(String[] selects){
+    public void setFilter(String[] selects){    //selects가 하나라도 있는 모든 충전소만 표시
         String[] type = {"B타입(5핀)","C타입(5핀)", "BC타입(5핀)","BC타입(7핀)", "DC차데모","AC3상", "DC콤보","DC차데모+DC콤보", "DC차데모+AC3상","DC차데모+DC콤보+AC3상"};
         int[] selects_int = new int[selects.length];
         for(int i = 0 ; i < selects_int.length;i++){    //타입을 정수로 바꿈
@@ -788,7 +736,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 }
             }
         }
-        List<List<Integer>> station_n = new ArrayList<>();
+        List<List<Integer>> station_n = new ArrayList<>();  //select[i]에 해당하는 충전소들 모으기
         for(int i = 0 ; i < selects_int.length; i++){
             List<Integer> row = new ArrayList<>();
             for(int j=0; j < search_result.getStation_size(); j++){
@@ -798,7 +746,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             }
             station_n.add(row);
         }
-        List<Integer> clean_station_list = new ArrayList<>();   //중복 제거된 버전으로바꾸기
+        List<Integer> clean_station_list = new ArrayList<>();   //리스트 하나에 모으면서 중복 없에기
         for(int i = 0 ; i < station_n.size(); i++){
             for(int j=0; j < station_n.get(i).size(); j++){
                 if(!clean_station_list.contains(station_n.get(i).get(j))){
@@ -807,7 +755,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             }
         }
 
-        mapView.removeAllPOIItems();
+        mapView.removeAllPOIItems();                //전체 맵포인트 제거 후 갱신
         marker = new MapPOIItem[clean_station_list.size()];
         for(int i = 0; i <clean_station_list.size(); i++){
             int temp = clean_station_list.get(i);
@@ -816,8 +764,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             marker[i].setItemName(search_result.getStations()[i].getCsNm());    //충전소 명칭을 이름으로 표시
             marker[i].setTag(i);
             marker[i].setMapPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[temp].getLat(), search_result.getStations()[temp].getLongi()));
-            marker[i].setMarkerType(MapPOIItem.MarkerType.YellowPin); // 기본으로 제공하는 BluePin 마커 모양.
-            marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.BluePin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+            marker[i].setMarkerType(MapPOIItem.MarkerType.YellowPin); // 마커를 노란색으로 생성
+            marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.BluePin); // 마커를 클릭했을때, 파란색으로 설정
             mapView.addPOIItem(marker[i]);
         }
 
@@ -826,7 +774,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     }
 
     public void resetFilter(){
-        mapView.removeAllPOIItems();
+        mapView.removeAllPOIItems();            //전체 맵포인트 제거 후 갱신
 
         marker = new MapPOIItem[search_result.getStation_size()];
         for(int i = 0; i <search_result.getStation_size(); i++){
@@ -837,8 +785,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             Log.d("station get", "" + search_result.getStations()[i].getLat());
             Log.d("station get", "" + search_result.getStations()[i].getLongi());
             marker[i].setMapPoint(MapPoint.mapPointWithGeoCoord(search_result.getStations()[i].getLat(), search_result.getStations()[i].getLongi()));
-            marker[i].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
-            marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+            marker[i].setMarkerType(MapPOIItem.MarkerType.BluePin); // 마커를 기본 색상으로 생성
+            marker[i].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본 색상으로 생성
 //                    mapView.addPOIItem(marker[i]);
         }
 
@@ -882,7 +830,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         if(line.equals("\n")){
             line = "\n현재 이용 가능한 충전기 없음\n";
         }
-        Intent it = new Intent(MainActivity.this, CustomNotiActivity.class);
+        Intent it = new Intent(MainActivity.this, CustomNotiActivity.class);    //intent로 레이아웃 표현에 필요한 값 보내기
         it.putExtra("station_name", now.getCsNm());
         it.putExtra("charger_info", line);
         it.putExtra("kakao", url);
